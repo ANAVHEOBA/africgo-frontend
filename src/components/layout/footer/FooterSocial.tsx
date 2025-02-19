@@ -2,7 +2,14 @@
 
 import { motion } from "framer-motion"
 
-const socialLinks = [
+// Add proper type definitions
+interface SocialLink {
+  name: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+const socialLinks: SocialLink[] = [
   {
     name: "Twitter",
     href: "https://twitter.com",

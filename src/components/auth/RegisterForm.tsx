@@ -47,9 +47,9 @@ export default function RegisterForm() {
         setStatus("error")
         setMessage(data.message || "Registration failed. Please try again.")
       }
-    } catch (error) {
+    } catch (err) {
       setStatus("error")
-      setMessage("An error occurred. Please try again later.")
+      setMessage("An error occurred. Please try again.")
     }
   }
 

@@ -32,9 +32,9 @@ export default function FooterNewsletter() {
         setStatus("error")
         setMessage(data.message || "Something went wrong")
       }
-    } catch (error) {
+    } catch (err) {
       setStatus("error")
-      setMessage("Failed to subscribe. Please try again later.")
+      setMessage("Failed to subscribe. Please try again.")
     }
   }
 
