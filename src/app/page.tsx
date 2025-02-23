@@ -1,20 +1,19 @@
-import HeroSection from "@/components/sections/HeroSection";
-import BenefitsSection from "@/components/sections/BenefitsSection";
-import FeaturesSection from "@/components/sections/FeaturesSection";
-import HowItWorksSection from "@/components/sections/HowItWorksSection";
-import SuccessStoriesSection from "@/components/sections/SuccessStoriesSection";
-import CTASection from "@/components/sections/CTASection";
+import HeroSection from "@/components/sections/HeroSection"
+import FeaturesSection from "@/components/sections/FeaturesSection"
+import BenefitsSection from "@/components/sections/BenefitsSection"
+import HowItWorksSection from "@/components/sections/HowItWorksSection"
+import SuccessStoriesSection from "@/components/sections/SuccessStoriesSection"
+import CTASection from "@/components/sections/CTASection"
 
 export default function Home() {
   return (
-    <>
+    <main>
       <HeroSection />
-      <BenefitsSection />
       <FeaturesSection />
+      <BenefitsSection />
       <HowItWorksSection />
       <SuccessStoriesSection />
       <CTASection />
-      {/* Other sections will be added here */}
-    </>
-  );
+    </main>
+  )
 }

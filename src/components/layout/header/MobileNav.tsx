@@ -53,20 +53,27 @@ export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
                     key={item.href}
                     href={item.href}
                     onClick={onClose}
-                    className="block p-4 text-white/70 hover:text-white hover:bg-gold-primary/5 
-                      rounded-lg transition-all duration-300"
+                    className="block p-4 text-white/70 hover:text-white hover:bg-gold-primary/5 rounded-lg transition-all duration-300"
                   >
                     {item.name}
                   </Link>
                 ))}
               </nav>
 
-              {/* Register Button */}
-              <div className="mt-8">
-                <Link 
-                  href="/register"
-                  onClick={onClose}
-                >
+              {/* Auth Buttons */}
+              <div className="mt-8 space-y-4">
+                <Link href="/login" onClick={onClose}>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="w-full px-6 py-3 text-sm font-medium text-white border border-white/10 
+                      hover:bg-white/5 rounded-lg transition-colors duration-300"
+                  >
+                    Log In
+                  </motion.button>
+                </Link>
+                
+                <Link href="/register" onClick={onClose}>
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
