@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Product, ProductStatus } from '@/lib/products/types'
@@ -13,8 +13,61 @@ interface ProductCardProps {
 
 export default function ProductCard({ product, onDelete }: ProductCardProps) {
   const router = useRouter()
+  const isMounted = useRef(true)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
+  const [imageUrl, setImageUrl] = useState<string>('')
+  const [imageError, setImageError] = useState(false)
+  const [isImageLoading, setIsImageLoading] = useState(true)
+  const [isVisible, setIsVisible] = useState(false)
+
+  // Use intersection observer to detect when card is visible
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true)
+          observer.disconnect()
+        }
+      },
+      { threshold: 0.1 }
+    )
+
+    const element = document.getElementById(`product-${product._id}`)
+    if (element) {
+      observer.observe(element)
+    }
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [product._id])
+
+  // Set image URL only once when component mounts
+  useEffect(() => {
+    const url = process.env.NODE_ENV === 'development'
+      ? `https://picsum.photos/seed/${product._id}/400/300`
+      : product.images[0] || ''
+    
+    setImageUrl(url)
+
+    return () => {
+      isMounted.current = false
+    }
+  }, [product._id, product.images])
+
+  const handleImageLoad = useCallback(() => {
+    if (isMounted.current) {
+      setIsImageLoading(false)
+    }
+  }, [])
+
+  const handleImageError = useCallback(() => {
+    if (isMounted.current) {
+      setImageError(true)
+      setIsImageLoading(false)
+    }
+  }, [])
 
   const handleEdit = () => {
     router.push(`/dashboard/products/${product._id}`)
@@ -55,30 +108,47 @@ export default function ProductCard({ product, onDelete }: ProductCardProps) {
   const getStatusColor = (status: ProductStatus) => {
     switch (status) {
       case ProductStatus.ACTIVE:
-        return 'bg-green-100 text-green-800'
+        return 'bg-gold-primary/20 text-gold-primary'
       case ProductStatus.OUT_OF_STOCK:
         return 'bg-red-100 text-red-800'
       case ProductStatus.DISCONTINUED:
-        return 'bg-gray-100 text-gray-800'
+        return 'bg-gray-800/10 text-gray-800'
       default:
-        return 'bg-gray-100 text-gray-800'
+        return 'bg-gray-800/10 text-gray-800'
     }
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 hover:border-gold-primary transition-colors">
+    <div 
+      id={`product-${product._id}`}
+      className="bg-black/5 rounded-lg shadow-md overflow-hidden border border-gold-primary/20 hover:border-gold-primary transition-all hover:shadow-lg"
+    >
       {/* Product Image */}
-      <div className="relative h-48 bg-gray-100">
-        {product.images[0] ? (
-          <Image
-            src={product.images[0]}
-            alt={product.name}
-            fill
-            className="object-cover"
-          />
+      <div className="relative h-48 bg-black/10">
+        {isVisible && imageUrl && !imageError ? (
+          <>
+            {isImageLoading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/5">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold-primary"></div>
+              </div>
+            )}
+            <Image
+              src={imageUrl}
+              alt={product.name}
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              className={`object-cover transition-opacity duration-300 ${
+                isImageLoading ? 'opacity-0' : 'opacity-100'
+              }`}
+              onLoad={handleImageLoad}
+              onError={handleImageError}
+              loading="lazy"
+              quality={75}
+            />
+          </>
         ) : (
-          <div className="flex items-center justify-center h-full text-gray-400">
-            No Image
+          <div className="flex items-center justify-center h-full text-gray-600">
+            <span>No Image</span>
           </div>
         )}
         
@@ -90,11 +160,11 @@ export default function ProductCard({ product, onDelete }: ProductCardProps) {
 
       {/* Product Info */}
       <div className="p-4 space-y-2">
-        <h3 className="font-semibold text-lg truncate" title={product.name}>
+        <h3 className="font-semibold text-lg truncate text-gray-900" title={product.name}>
           {product.name}
         </h3>
         
-        <p className="text-gray-600 text-sm line-clamp-2" title={product.description}>
+        <p className="text-gray-700 text-sm line-clamp-2" title={product.description}>
           {product.description}
         </p>
 
@@ -102,20 +172,20 @@ export default function ProductCard({ product, onDelete }: ProductCardProps) {
           <span className="text-lg font-bold text-gold-primary">
             ${product.price.toFixed(2)}
           </span>
-          <span className="text-sm text-gray-500">
+          <span className="text-sm text-gray-700">
             Stock: {product.stock}
           </span>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-between items-center pt-3 border-t">
+        <div className="flex justify-between items-center pt-3 border-t border-gold-primary/10">
           <button
             onClick={togglePublished}
             disabled={isUpdating}
-            className={`px-3 py-1 rounded text-sm ${
+            className={`px-3 py-1 rounded text-sm transition-colors ${
               product.isPublished
-                ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                ? 'bg-gold-primary text-white hover:bg-gold-secondary'
+                : 'bg-gray-800 text-white hover:bg-gray-700'
             }`}
           >
             {isUpdating ? 'Updating...' : (product.isPublished ? 'Published' : 'Draft')}
@@ -124,7 +194,7 @@ export default function ProductCard({ product, onDelete }: ProductCardProps) {
           <div className="flex gap-2">
             <button
               onClick={handleEdit}
-              className="p-2 text-blue-600 hover:bg-blue-50 rounded"
+              className="p-2 text-gold-primary hover:bg-gold-primary/10 rounded transition-colors"
             >
               <span className="sr-only">Edit</span>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -135,7 +205,7 @@ export default function ProductCard({ product, onDelete }: ProductCardProps) {
             <button
               onClick={handleDelete}
               disabled={isDeleting}
-              className="p-2 text-red-600 hover:bg-red-50 rounded"
+              className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
             >
               <span className="sr-only">Delete</span>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -1,4 +1,4 @@
-import RegisterForm from "@/components/auth/RegisterForm"
+import AccountTypeSelector from "@/components/auth/AccountTypeSelector"
 
 export default function RegisterPage() {
   return (
@@ -10,7 +10,7 @@ export default function RegisterPage() {
       </div>
 
       <div className="container mx-auto px-4 pt-32 pb-20 relative z-10">
-        <RegisterForm />
+        <AccountTypeSelector />
       </div>
     </div>
   )

@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation"
 
 export default function LoginForm() {
   const router = useRouter()
+  const [accountType, setAccountType] = useState<"merchant" | "consumer">("merchant")
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -20,8 +21,12 @@ export default function LoginForm() {
     setStatus("loading")
     setMessage("")
 
+    const endpoint = accountType === "merchant" 
+      ? "/api/users/login"
+      : "/api/consumers/login"
+
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/login`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -32,20 +37,12 @@ export default function LoginForm() {
       const data = await response.json()
 
       if (response.ok) {
-        console.log('Login successful, storing token...')
         setStatus("success")
         localStorage.setItem('token', data.data.token)
+        localStorage.setItem('userType', accountType)
         
-        // Add a longer delay and use replace instead of push
-        console.log('Navigating to dashboard...')
-        setTimeout(() => {
-          router.replace('/dashboard')
-          
-          // Add a check after navigation
-          setTimeout(() => {
-            console.log('Current pathname:', window.location.pathname)
-          }, 500)
-        }, 500)
+        // Redirect based on account type
+        router.replace(accountType === "merchant" ? '/dashboard' : '/stores')
       } else {
         setStatus("error")
         setMessage(data.message || "Login failed. Please try again.")
@@ -82,6 +79,35 @@ export default function LoginForm() {
         onSubmit={handleSubmit}
         className="space-y-6 bg-dark-primary/50 backdrop-blur-sm p-8 rounded-lg border border-white/10"
       >
+        {/* Account Type */}
+        <div className="mb-6">
+          <label className="block text-white mb-2">Account Type</label>
+          <div className="flex gap-4">
+            <button
+              type="button"
+              onClick={() => setAccountType("merchant")}
+              className={`flex-1 py-2 px-4 rounded ${
+                accountType === "merchant" 
+                  ? "bg-gold-primary text-dark-primary" 
+                  : "bg-dark-secondary text-white"
+              }`}
+            >
+              Store Owner
+            </button>
+            <button
+              type="button"
+              onClick={() => setAccountType("consumer")}
+              className={`flex-1 py-2 px-4 rounded ${
+                accountType === "consumer" 
+                  ? "bg-gold-primary text-dark-primary" 
+                  : "bg-dark-secondary text-white"
+              }`}
+            >
+              Consumer
+            </button>
+          </div>
+        </div>
+
         {/* Email */}
         <div>
           <label htmlFor="email" className="block text-white mb-2">

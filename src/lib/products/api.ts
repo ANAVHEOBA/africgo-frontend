@@ -6,7 +6,10 @@ import {
   PaginatedProducts 
 } from './types'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+
+// Add request cache to prevent duplicate requests
+const requestCache = new Map<string, Promise<any>>()
 
 // Helper function to handle API responses
 async function handleResponse<T>(response: Response): Promise<T> {
@@ -21,24 +24,60 @@ async function handleResponse<T>(response: Response): Promise<T> {
 
 // Get all products for the store
 export async function getStoreProducts(filters: ProductFilters = {}): Promise<PaginatedProducts> {
-  const queryParams = new URLSearchParams()
-  
-  if (filters.page) queryParams.append('page', filters.page.toString())
-  if (filters.limit) queryParams.append('limit', filters.limit.toString())
-  if (filters.category) queryParams.append('category', filters.category)
-  if (filters.status) queryParams.append('status', filters.status)
-  if (filters.search) queryParams.append('search', filters.search)
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
 
-  const response = await fetch(
+  if (!token) {
+    throw new Error('Authentication token not found')
+  }
+
+  const queryParams = new URLSearchParams()
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      queryParams.append(key, value.toString())
+    }
+  })
+
+  const cacheKey = `products-${queryParams.toString()}`
+  
+  if (requestCache.has(cacheKey)) {
+    return requestCache.get(cacheKey)!
+  }
+
+  const request = fetch(
     `${API_URL}/api/products/store?${queryParams.toString()}`,
     {
+      method: 'GET',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      }
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      cache: 'no-store',
     }
   )
+  .then(async (response) => {
+    if (!response.ok) {
+      if (response.status === 401) {
+        localStorage.removeItem('token')
+        throw new Error('Authentication token not found')
+      }
+      const errorData = await response.json()
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
+    }
+    return response.json()
+  })
+  .then(data => {
+    if (!data.success) {
+      throw new Error(data.message || 'API request failed')
+    }
+    return data.data
+  })
+  .finally(() => {
+    // Remove from cache after request is complete
+    setTimeout(() => requestCache.delete(cacheKey), 0)
+  })
 
-  return handleResponse<PaginatedProducts>(response)
+  requestCache.set(cacheKey, request)
+  return request
 }
 
 // Create a new product

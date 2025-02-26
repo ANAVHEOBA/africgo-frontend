@@ -10,6 +10,13 @@ export default function RootLayoutClient({
 }) {
   const pathname = usePathname();
   const isDashboard = pathname?.startsWith('/dashboard');
+  const isAuth = pathname?.startsWith('/login') || pathname?.startsWith('/register');
 
-  return isDashboard ? children : <ClientLayout>{children}</ClientLayout>;
+  // Return raw children for dashboard and auth routes
+  if (isDashboard || isAuth) {
+    return children;
+  }
+
+  // Use ClientLayout for marketing and stores pages
+  return <ClientLayout>{children}</ClientLayout>;
 } 

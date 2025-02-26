@@ -1,11 +1,11 @@
 "use client"
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, memo } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Sidebar from '@/components/dashboard/layout/Sidebar'
 import TopNav from '@/components/dashboard/layout/TopNav'
 
-export default function DashboardLayout({
+const DashboardLayout = memo(function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
@@ -15,18 +15,15 @@ export default function DashboardLayout({
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    console.log("=== Dashboard Layout Debug ===")
-    console.log("Current pathname:", pathname)
     const token = localStorage.getItem('token')
-    console.log("Token exists:", !!token)
     
     if (!token) {
-      console.log("No token - redirecting to login")
       router.replace('/login')
       return
     }
+
     setIsLoading(false)
-  }, [router, pathname])
+  }, [router]) // Remove pathname dependency
 
   if (isLoading) {
     return (
@@ -38,7 +35,7 @@ export default function DashboardLayout({
 
   return (
     <div className="flex min-h-screen">
-      <Sidebar />
+      <Sidebar currentPath={pathname} />
       <div className="flex-1">
         <TopNav />
         <main className="p-8">
@@ -47,4 +44,6 @@ export default function DashboardLayout({
       </div>
     </div>
   )
-} 
+})
+
+export default DashboardLayout 

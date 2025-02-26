@@ -1,16 +1,15 @@
 "use client"
 
 import { useEffect, useState, useCallback, memo } from 'react'
-import type { ProductFilters } from '@/lib/products/types'
-import { ProductStatus } from '@/lib/products/types'
+import { StoreFilters as StoreFiltersType } from '@/lib/stores/types'
 import { useDebounce } from '@/lib/utils'
 
-interface ProductFiltersProps {
-  filters: ProductFilters
-  onFilterChange: (filters: Partial<ProductFilters>) => void
+interface StoreFiltersProps {
+  filters: StoreFiltersType
+  onFilterChange: (filters: Partial<StoreFiltersType>) => void
 }
 
-const ProductFilters = memo(function ProductFilters({ filters, onFilterChange }: ProductFiltersProps) {
+const StoreFilters = memo(function StoreFilters({ filters, onFilterChange }: StoreFiltersProps) {
   const [searchTerm, setSearchTerm] = useState(filters.search || '')
   const debouncedSearch = useDebounce(searchTerm, 500)
 
@@ -20,14 +19,14 @@ const ProductFilters = memo(function ProductFilters({ filters, onFilterChange }:
     }
   }, [debouncedSearch, filters.search, onFilterChange])
 
-  const handleStatusChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value as ProductStatus
-    onFilterChange({ status: value || undefined })
-  }, [onFilterChange])
-
   const handleCategoryChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value
     onFilterChange({ category: value || undefined })
+  }, [onFilterChange])
+
+  const handleCityChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value
+    onFilterChange({ city: value || undefined })
   }, [onFilterChange])
 
   const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -35,7 +34,7 @@ const ProductFilters = memo(function ProductFilters({ filters, onFilterChange }:
   }, [])
 
   return (
-    <div className="bg-black/5 p-4 rounded-lg shadow-md border border-gold-primary/20 space-y-4">
+    <div className="bg-black/5 p-4 rounded-lg shadow-md border border-gold-primary/20 space-y-4 hover:border-gold-primary transition-all">
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="flex-1">
           <div className="relative">
@@ -43,10 +42,10 @@ const ProductFilters = memo(function ProductFilters({ filters, onFilterChange }:
               type="text"
               value={searchTerm}
               onChange={handleSearchChange}
-              placeholder="Search products..."
+              placeholder="Search stores..."
               className="w-full pl-10 pr-4 py-2 bg-black/5 border-gold-primary/20 border rounded-lg 
                 focus:outline-none focus:ring-2 focus:ring-gold-primary focus:border-gold-primary
-                text-gray-800 placeholder-gray-500"
+                text-gray-800 placeholder-gray-500 hover:border-gold-primary transition-all"
             />
             <svg
               className="absolute left-3 top-2.5 h-5 w-5 text-gold-primary"
@@ -66,39 +65,44 @@ const ProductFilters = memo(function ProductFilters({ filters, onFilterChange }:
 
         <div className="sm:w-48">
           <select
-            value={filters.status || ''}
-            onChange={handleStatusChange}
+            value={filters.category || ''}
+            onChange={handleCategoryChange}
             className="w-full px-4 py-2 bg-black/5 border-gold-primary/20 border rounded-lg 
               focus:outline-none focus:ring-2 focus:ring-gold-primary focus:border-gold-primary
-              text-gray-800"
+              text-gray-800 hover:border-gold-primary transition-all"
           >
-            <option value="">All Status</option>
-            {Object.values(ProductStatus).map((status) => (
-              <option key={status} value={status}>{status}</option>
-            ))}
+            <option value="">All Categories</option>
+            <option value="FASHION">Fashion</option>
+            <option value="ELECTRONICS">Electronics</option>
+            <option value="FOOD">Food</option>
+            <option value="OTHER">Other</option>
           </select>
         </div>
 
         <div className="sm:w-48">
           <select
-            value={filters.category || ''}
-            onChange={handleCategoryChange}
+            value={filters.city || ''}
+            onChange={handleCityChange}
             className="w-full px-4 py-2 bg-black/5 border-gold-primary/20 border rounded-lg 
               focus:outline-none focus:ring-2 focus:ring-gold-primary focus:border-gold-primary
-              text-gray-800"
+              text-gray-800 hover:border-gold-primary transition-all"
           >
-            <option value="">All Categories</option>
-            <option value="Electronics">Electronics</option>
-            <option value="Clothing">Clothing</option>
-            <option value="Books">Books</option>
-            <option value="Home">Home</option>
-            <option value="Other">Other</option>
+            <option value="">All Cities</option>
+            <option value="Lagos">Lagos</option>
+            <option value="Abuja">Abuja</option>
+            <option value="Port Harcourt">Port Harcourt</option>
+            <option value="Kano">Kano</option>
           </select>
         </div>
       </div>
 
       {/* Active Filters */}
-      <ActiveFilters filters={filters} onFilterChange={onFilterChange} searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+      <ActiveFilters 
+        filters={filters} 
+        onFilterChange={onFilterChange} 
+        searchTerm={searchTerm} 
+        setSearchTerm={setSearchTerm} 
+      />
     </div>
   )
 })
@@ -109,23 +113,23 @@ const ActiveFilters = memo(function ActiveFilters({
   searchTerm, 
   setSearchTerm 
 }: { 
-  filters: ProductFilters
-  onFilterChange: (filters: Partial<ProductFilters>) => void
+  filters: StoreFiltersType
+  onFilterChange: (filters: Partial<StoreFiltersType>) => void
   searchTerm: string
   setSearchTerm: (term: string) => void
 }) {
   return (
     <div className="flex flex-wrap gap-2">
-      {filters.status && (
-        <FilterTag
-          label={`Status: ${filters.status}`}
-          onRemove={() => onFilterChange({ status: undefined })}
-        />
-      )}
       {filters.category && (
         <FilterTag
           label={`Category: ${filters.category}`}
           onRemove={() => onFilterChange({ category: undefined })}
+        />
+      )}
+      {filters.city && (
+        <FilterTag
+          label={`City: ${filters.city}`}
+          onRemove={() => onFilterChange({ city: undefined })}
         />
       )}
       {filters.search && (
@@ -165,4 +169,4 @@ const FilterTag = memo(function FilterTag({
   )
 })
 
-export default ProductFilters 
+export default StoreFilters 

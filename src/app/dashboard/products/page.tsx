@@ -1,9 +1,21 @@
 "use client"
 
+import { Suspense, memo } from 'react'
 import Link from "next/link"
 import ProductList from "@/components/dashboard/products/ProductList"
 
-export default function ProductsPage() {
+const LoadingFallback = () => (
+  <div className="animate-pulse">
+    <div className="h-8 w-48 bg-gray-200 rounded mb-6"></div>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {[...Array(6)].map((_, i) => (
+        <div key={i} className="bg-gray-200 h-64 rounded-lg"></div>
+      ))}
+    </div>
+  </div>
+)
+
+const ProductsPage = memo(function ProductsPage() {
   console.log("=== Products Page Debug ===")
   console.log("Rendering Products Page")
 
@@ -18,7 +30,11 @@ export default function ProductsPage() {
           Add New Product
         </Link>
       </div>
-      <ProductList />
+      <Suspense fallback={<LoadingFallback />}>
+        <ProductList />
+      </Suspense>
     </div>
   )
-} 
+})
+
+export default ProductsPage 

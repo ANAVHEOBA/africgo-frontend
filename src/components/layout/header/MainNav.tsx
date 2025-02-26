@@ -24,6 +24,10 @@ const navItems = [
   {
     name: "Success Stories",
     href: "#success-stories",
+  },
+  {
+    name: "Stores",
+    href: "/stores",
   }
 ]
 
