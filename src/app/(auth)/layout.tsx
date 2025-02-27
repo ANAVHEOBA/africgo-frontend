@@ -1,6 +1,8 @@
-import RegisterForm from "@/components/auth/RegisterForm"
-
-export default function RegisterPage() {
+export default function AuthLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return (
     <div className="min-h-screen bg-dark-primary">
       {/* Background Effects */}
@@ -10,7 +12,7 @@ export default function RegisterPage() {
       </div>
 
       <div className="container mx-auto px-4 pt-32 pb-20 relative z-10">
-        <RegisterForm />
+        {children}
       </div>
     </div>
   )
