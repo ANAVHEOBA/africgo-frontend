@@ -1,19 +1,19 @@
-"use client"
+"use client";
 
-import { motion, AnimatePresence } from "framer-motion"
-import Link from "next/link"
+import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 
 interface MobileNavProps {
-  isOpen: boolean
-  onClose: () => void
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 const navItems = [
   { name: "Benefits", href: "#benefits" },
   { name: "Features", href: "#features" },
   { name: "How It Works", href: "#how-it-works" },
-  { name: "Success Stories", href: "#success-stories" }
-]
+  { name: "Success Stories", href: "#success-stories" },
+];
 
 export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
   return (
@@ -63,15 +63,12 @@ export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
 
               {/* Register Button */}
               <div className="mt-8">
-                <Link 
-                  href="/register"
-                  onClick={onClose}
-                >
+                <Link href="/register" onClick={onClose}>
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     className="w-full px-6 py-3 text-sm font-medium bg-gradient-to-r 
-                      from-gold-primary to-gold-secondary text-dark-primary rounded-lg"
+                      from-gold-primary to-gold-secondary text-light-primary rounded-lg"
                   >
                     Register Now
                   </motion.button>
@@ -82,7 +79,7 @@ export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
         </>
       )}
     </AnimatePresence>
-  )
+  );
 }
 
 const CloseIcon = () => (
@@ -99,4 +96,4 @@ const CloseIcon = () => (
       d="M6 18L18 6M6 6l12 12"
     />
   </svg>
-)
+);
