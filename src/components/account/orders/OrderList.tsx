@@ -3,21 +3,8 @@
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import Link from "next/link"
-import { formatDate } from "@/lib/utils"
-
-interface Order {
-  _id: string
-  orderNumber: string
-  createdAt: string
-  total: number
-  status: "pending" | "processing" | "shipped" | "delivered" | "cancelled"
-  items: Array<{
-    productId: string
-    name: string
-    quantity: number
-    price: number
-  }>
-}
+import { getOrders } from "@/lib/orders/api"
+import { Order } from "@/lib/orders/types"
 
 export default function OrderList() {
   const [orders, setOrders] = useState<Order[]>([])
@@ -27,21 +14,10 @@ export default function OrderList() {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const token = localStorage.getItem("token")
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/consumers/orders`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch orders")
-        }
-
-        const data = await response.json()
-        setOrders(data.orders)
-      } catch (err) {
-        setError("Failed to load orders. Please try again later.")
+        const data = await getOrders()
+        setOrders(data)
+      } catch (error) {
+        setError(error instanceof Error ? error.message : "Failed to fetch orders")
       } finally {
         setLoading(false)
       }
@@ -51,80 +27,70 @@ export default function OrderList() {
   }, [])
 
   if (loading) {
-    return <div className="text-text-secondary">Loading orders...</div>
+    return <div className="text-white">Loading orders...</div>
   }
 
   if (error) {
     return <div className="text-red-400">{error}</div>
   }
 
-  if (orders.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <h2 className="text-xl font-semibold text-white mb-4">No Orders Yet</h2>
-        <p className="text-text-secondary mb-6">
-          Start shopping to see your orders here
-        </p>
-        <Link
-          href="/stores"
-          className="inline-block px-6 py-3 bg-gold-primary text-dark-primary rounded-lg
-            hover:bg-gold-secondary transition-colors"
-        >
-          Browse Stores
-        </Link>
-      </div>
-    )
-  }
-
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold text-white">My Orders</h1>
-      
-      <div className="space-y-4">
-        {orders.map((order) => (
-          <motion.div
-            key={order._id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-dark-secondary p-6 rounded-lg border border-white/10"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="text-lg font-medium text-white">
-                  Order #{order.orderNumber}
-                </h3>
-                <p className="text-text-secondary">
-                  {formatDate(new Date(order.createdAt))}
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="text-white font-medium">
-                  ${order.total.toFixed(2)}
-                </p>
-                <p className={`text-sm capitalize
-                  ${order.status === "delivered" ? "text-green-400" :
-                    order.status === "cancelled" ? "text-red-400" :
-                    "text-gold-primary"}`}
-                >
-                  {order.status}
-                </p>
-              </div>
-            </div>
+      <h1 className="text-2xl font-bold text-white">My Orders</h1>
 
-            <div className="border-t border-white/10 pt-4">
-              <p className="text-text-secondary mb-4">
-                {order.items.length} {order.items.length === 1 ? "item" : "items"}
-              </p>
-              <Link
-                href={`/account/orders/${order._id}`}
-                className="text-gold-primary hover:text-gold-secondary transition-colors"
-              >
-                View Order Details →
-              </Link>
-            </div>
-          </motion.div>
-        ))}
-      </div>
+      {orders.length === 0 ? (
+        <div className="text-white/70">No orders found</div>
+      ) : (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="grid gap-4"
+        >
+          {orders.map((order) => (
+            <Link
+              key={order._id}
+              href={`/account/orders/${order._id}`}
+              className="block bg-dark-secondary p-6 rounded-lg border border-white/10
+                hover:border-gold-primary transition-colors"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="space-y-1">
+                  <p className="text-white font-medium">
+                    Order #{order.trackingNumber}
+                  </p>
+                  <p className="text-white/70 text-sm">
+                    {new Date(order.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <span className={`inline-block px-3 py-1 rounded-full text-sm
+                    ${order.status === 'DELIVERED' 
+                      ? 'bg-green-500/20 text-green-500'
+                      : order.status === 'PENDING'
+                      ? 'bg-yellow-500/20 text-yellow-500'
+                      : 'bg-blue-500/20 text-blue-500'
+                    }`}
+                  >
+                    {order.status}
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 text-sm text-white/70">
+                <div>
+                  <p className="font-medium text-white">Delivery Address</p>
+                  <p>{order.deliveryAddress.street}</p>
+                  <p>{order.deliveryAddress.city}, {order.deliveryAddress.state}</p>
+                </div>
+                <div className="text-right">
+                  <p className="font-medium text-white">Total Amount</p>
+                  <p className="text-gold-primary">${order.price.toFixed(2)}</p>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </motion.div>
+      )}
     </div>
   )
 } 

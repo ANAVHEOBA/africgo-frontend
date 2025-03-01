@@ -39,6 +39,10 @@ export interface Store {
   }
   createdAt: string
   updatedAt: string
+  logo?: string
+  coverImage?: string
+  rating?: number
+  reviewCount?: number
 }
 
 export interface StoreFilters {
@@ -117,4 +121,20 @@ export interface PaginatedProducts {
     totalPages: number
     hasMore: boolean
   }
+}
+
+export interface StoreRating {
+  _id: string;
+  consumerId: string;
+  storeId: string;
+  rating: number;
+  review: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateStoreRatingData {
+  storeId: string;
+  rating: number;
+  review: string;
 } 

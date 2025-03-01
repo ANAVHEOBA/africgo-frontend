@@ -3,190 +3,152 @@
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import Link from "next/link"
-import { formatDate } from "@/lib/utils"
-
-interface OrderDetails {
-  _id: string
-  orderNumber: string
-  createdAt: string
-  total: number
-  status: "pending" | "processing" | "shipped" | "delivered" | "cancelled"
-  items: Array<{
-    productId: string
-    name: string
-    quantity: number
-    price: number
-    image?: string
-  }>
-  shippingAddress: {
-    firstName: string
-    lastName: string
-    address: string
-    city: string
-    state: string
-    zipCode: string
-    country: string
-  }
-  trackingNumber?: string
-}
+import { getOrderById } from "@/lib/orders/api"
+import { Order } from "@/lib/orders/types"
 
 export default function OrderDetails({ orderId }: { orderId: string }) {
-  const [order, setOrder] = useState<OrderDetails | null>(null)
+  const [order, setOrder] = useState<Order | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
 
   useEffect(() => {
-    const fetchOrderDetails = async () => {
+    const fetchOrder = async () => {
       try {
-        const token = localStorage.getItem("token")
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/consumers/orders/${orderId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        )
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch order details")
-        }
-
-        const data = await response.json()
-        setOrder(data.order)
-      } catch (err) {
-        setError("Failed to load order details. Please try again later.")
+        const data = await getOrderById(orderId)
+        setOrder(data)
+      } catch (error) {
+        setError(error instanceof Error ? error.message : "Failed to fetch order")
       } finally {
         setLoading(false)
       }
     }
 
-    fetchOrderDetails()
+    fetchOrder()
   }, [orderId])
 
   if (loading) {
-    return <div className="text-text-secondary">Loading order details...</div>
+    return <div className="text-white">Loading order details...</div>
   }
 
-  if (error || !order) {
+  if (error) {
     return <div className="text-red-400">{error}</div>
   }
 
+  if (!order) {
+    return <div className="text-white">Order not found</div>
+  }
+
   return (
-    <div className="space-y-8">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-8"
+    >
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-white">
-          Order #{order.orderNumber}
+        <h1 className="text-2xl font-bold text-white">
+          Order #{order.trackingNumber}
         </h1>
         <Link
           href="/account/orders"
-          className="text-text-secondary hover:text-white transition-colors"
+          className="text-gold-primary hover:text-gold-secondary transition-colors"
         >
           ← Back to Orders
         </Link>
       </div>
 
-      {/* Order Status */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-dark-secondary p-6 rounded-lg border border-white/10"
-      >
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <p className="text-text-secondary">Order Date</p>
-            <p className="text-white">
-              {formatDate(new Date(order.createdAt))}
-            </p>
-          </div>
-          <div className="text-right">
-            <p className="text-text-secondary">Status</p>
-            <p className={`font-medium capitalize
-              ${order.status === "delivered" ? "text-green-400" :
-                order.status === "cancelled" ? "text-red-400" :
-                "text-gold-primary"}`}
+      <div className="grid gap-6">
+        {/* Order Status */}
+        <div className="bg-dark-secondary p-6 rounded-lg border border-white/10">
+          <h2 className="text-lg font-semibold text-white mb-4">Order Status</h2>
+          <div className="flex items-center justify-between">
+            <span className={`inline-block px-4 py-2 rounded-full
+              ${order.status === 'DELIVERED' 
+                ? 'bg-green-500/20 text-green-500'
+                : order.status === 'PENDING'
+                ? 'bg-yellow-500/20 text-yellow-500'
+                : 'bg-blue-500/20 text-blue-500'
+              }`}
             >
               {order.status}
+            </span>
+            <p className="text-white/70">
+              Estimated Delivery: {new Date(order.estimatedDeliveryDate).toLocaleDateString()}
             </p>
           </div>
         </div>
 
-        {order.trackingNumber && (
-          <div className="border-t border-white/10 pt-4 mt-4">
-            <p className="text-text-secondary">Tracking Number</p>
-            <p className="text-white font-medium">{order.trackingNumber}</p>
-          </div>
-        )}
-      </motion.div>
-
-      {/* Order Items */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="bg-dark-secondary p-6 rounded-lg border border-white/10"
-      >
-        <h2 className="text-lg font-semibold text-white mb-4">Order Items</h2>
-        <div className="space-y-4">
-          {order.items.map((item) => (
-            <div
-              key={item.productId}
-              className="flex items-center space-x-4 py-4 border-b border-white/10 last:border-0"
-            >
-              {item.image && (
-                <div className="w-16 h-16 relative rounded-lg overflow-hidden">
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="object-cover"
-                  />
+        {/* Order Items */}
+        <div className="bg-dark-secondary p-6 rounded-lg border border-white/10">
+          <h2 className="text-lg font-semibold text-white mb-4">Order Items</h2>
+          <div className="space-y-4">
+            {order.items.map((item) => (
+              <div 
+                key={item._id}
+                className="flex items-center justify-between py-4 border-b border-white/10 last:border-0"
+              >
+                <div>
+                  <p className="text-white">Product ID: {item.productId}</p>
+                  <p className="text-white/70">Quantity: {item.quantity}</p>
                 </div>
-              )}
-              <div className="flex-1">
-                <h3 className="text-white font-medium">{item.name}</h3>
-                <p className="text-text-secondary">
-                  Quantity: {item.quantity}
-                </p>
+                <p className="text-gold-primary">${item.price.toFixed(2)}</p>
               </div>
-              <p className="text-white font-medium">
-                ${(item.price * item.quantity).toFixed(2)}
-              </p>
-            </div>
-          ))}
-        </div>
-        <div className="border-t border-white/10 mt-6 pt-4">
-          <div className="flex justify-between">
-            <p className="text-white font-medium">Total</p>
-            <p className="text-white font-medium">
-              ${order.total.toFixed(2)}
-            </p>
+            ))}
           </div>
         </div>
-      </motion.div>
 
-      {/* Shipping Address */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="bg-dark-secondary p-6 rounded-lg border border-white/10"
-      >
-        <h2 className="text-lg font-semibold text-white mb-4">
-          Shipping Address
-        </h2>
-        <p className="text-white">
-          {order.shippingAddress.firstName} {order.shippingAddress.lastName}
-        </p>
-        <p className="text-text-secondary">
-          {order.shippingAddress.address}
-        </p>
-        <p className="text-text-secondary">
-          {order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zipCode}
-        </p>
-        <p className="text-text-secondary">
-          {order.shippingAddress.country}
-        </p>
-      </motion.div>
-    </div>
+        {/* Addresses */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Delivery Address */}
+          <div className="bg-dark-secondary p-6 rounded-lg border border-white/10">
+            <h2 className="text-lg font-semibold text-white mb-4">
+              Delivery Address
+            </h2>
+            <div className="space-y-2 text-white/70">
+              <p>{order.deliveryAddress.recipientName}</p>
+              <p>{order.deliveryAddress.street}</p>
+              <p>
+                {order.deliveryAddress.city}, {order.deliveryAddress.state}
+              </p>
+              <p>{order.deliveryAddress.country} {order.deliveryAddress.postalCode}</p>
+              <p>Phone: {order.deliveryAddress.recipientPhone}</p>
+            </div>
+          </div>
+
+          {/* Pickup Address */}
+          <div className="bg-dark-secondary p-6 rounded-lg border border-white/10">
+            <h2 className="text-lg font-semibold text-white mb-4">
+              Pickup Address
+            </h2>
+            <div className="space-y-2 text-white/70">
+              <p>{order.pickupAddress.street}</p>
+              <p>
+                {order.pickupAddress.city}, {order.pickupAddress.state}
+              </p>
+              <p>{order.pickupAddress.country} {order.pickupAddress.postalCode}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Order Details */}
+        <div className="bg-dark-secondary p-6 rounded-lg border border-white/10">
+          <h2 className="text-lg font-semibold text-white mb-4">
+            Shipping Details
+          </h2>
+          <div className="grid grid-cols-2 gap-4 text-white/70">
+            <div>
+              <p>Package Size: {order.packageSize}</p>
+              <p>Fragile: {order.isFragile ? 'Yes' : 'No'}</p>
+              <p>Express Delivery: {order.isExpressDelivery ? 'Yes' : 'No'}</p>
+            </div>
+            <div>
+              <p>Special Handling: {order.requiresSpecialHandling ? 'Yes' : 'No'}</p>
+              {order.specialInstructions && (
+                <p>Instructions: {order.specialInstructions}</p>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </motion.div>
   )
 } 

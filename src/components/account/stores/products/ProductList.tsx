@@ -1,46 +1,33 @@
 "use client"
 
-import { useState, useCallback, useEffect, memo } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { getStoreProducts } from '@/lib/stores/api'
-import StoreProductCard from '@/components/stores/products/StoreProductCard'
 import { Product } from '@/lib/stores/types'
-import { ProductStatus } from '@/lib/products/types'
+import ProductCard from './ProductCard'
+import { useStableDebounce } from '@/lib/utils'
 
-interface StoreProductsProps {
-  storeSlug: string | undefined
+interface ConsumerStoreProductsProps {
   storeId: string
-  isConsumerDashboard?: boolean
 }
 
-const StoreProducts = memo(function StoreProducts({ 
-  storeSlug, 
-  storeId,
-  isConsumerDashboard = false
-}: StoreProductsProps) {
+export default function ConsumerStoreProducts({ storeId }: ConsumerStoreProductsProps) {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [filters, setFilters] = useState({
     page: 1,
     limit: 12,
-    category: '',
     sortBy: 'createdAt',
     sortOrder: 'desc' as 'asc' | 'desc'
   })
   const [hasMore, setHasMore] = useState(false)
 
-  const fetchProducts = useCallback(async (isLoadMore = false) => {
-    if (!storeSlug) {
-      console.log('No store slug provided')
-      return
-    }
+  const debouncedFilters = useStableDebounce(filters, 500)
 
+  const fetchProducts = useCallback(async (isLoadMore = false) => {
     try {
-      console.log('Fetching products for store:', storeSlug)
       setLoading(true)
-      
-      const response = await getStoreProducts(storeSlug, filters)
-      console.log('API Response:', response)
+      const response = await getStoreProducts(storeId, debouncedFilters)
       
       if (response?.products?.length > 0) {
         setProducts(prev => isLoadMore ? [...prev, ...response.products] : response.products)
@@ -52,28 +39,16 @@ const StoreProducts = memo(function StoreProducts({
         setHasMore(false)
       }
       setError(null)
-    } catch (err) {
-      console.error('Error fetching products:', err)
+    } catch (error) {
       setError('Failed to load products. Please try again.')
     } finally {
       setLoading(false)
     }
-  }, [storeSlug, filters])
+  }, [storeId, debouncedFilters])
 
   useEffect(() => {
-    if (storeSlug) {
-      console.log('Fetching products for store slug:', storeSlug)
-      fetchProducts(false)
-    }
-  }, [storeSlug, fetchProducts])
-
-  if (!storeSlug) {
-    return <div>No store selected</div>
-  }
-
-  if (error) {
-    return <div className="text-red-500">{error}</div>
-  }
+    fetchProducts()
+  }, [fetchProducts])
 
   if (loading && products.length === 0) {
     return (
@@ -88,21 +63,22 @@ const StoreProducts = memo(function StoreProducts({
     )
   }
 
+  if (error) {
+    return <div className="text-red-500">{error}</div>
+  }
+
   return (
     <div className="space-y-6">
-      {/* Products Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {products.map((product) => (
-          <StoreProductCard 
+          <ProductCard 
             key={product._id} 
             product={product}
             storeId={storeId}
-            isConsumerDashboard={isConsumerDashboard}
           />
         ))}
       </div>
 
-      {/* Load More Button */}
       {hasMore && (
         <div className="flex justify-center pt-6">
           <button
@@ -117,6 +93,4 @@ const StoreProducts = memo(function StoreProducts({
       )}
     </div>
   )
-})
-
-export default StoreProducts 
+} 

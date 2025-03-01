@@ -1,4 +1,4 @@
-import { Store, StoreFilters, PaginatedStores, ProductFilters, PaginatedProducts } from './types'
+import { Store, StoreFilters, PaginatedStores, ProductFilters, PaginatedProducts, StoreRating, CreateStoreRatingData } from './types'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
 
@@ -13,7 +13,7 @@ async function handleResponse<T>(response: Response): Promise<T> {
   return data.data
 }
 
-// Get all stores with filters
+// Get all stores with optional filters
 export async function getStores(filters: StoreFilters = {}): Promise<PaginatedStores> {
   const queryParams = new URLSearchParams()
   
@@ -95,4 +95,21 @@ export async function getStoreProducts(storeSlug: string, filters: ProductFilter
       hasMore: data.data.page < data.data.totalPages
     }
   }
+}
+
+export async function rateStore(ratingData: CreateStoreRatingData): Promise<StoreRating> {
+  const token = localStorage.getItem('token')
+  const response = await fetch(`${API_URL}/api/consumers/rate-store`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(ratingData),
+  })
+  const data = await response.json()
+  if (!data.success) {
+    throw new Error(data.message || 'Failed to rate store')
+  }
+  return data.data
 } 

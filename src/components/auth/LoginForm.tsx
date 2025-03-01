@@ -42,7 +42,7 @@ export default function LoginForm() {
         localStorage.setItem('userType', accountType)
         
         // Redirect based on account type
-        router.replace(accountType === "merchant" ? '/dashboard' : '/stores')
+        router.replace(accountType === "merchant" ? '/dashboard' : '/account')
       } else {
         setStatus("error")
         setMessage(data.message || "Login failed. Please try again.")

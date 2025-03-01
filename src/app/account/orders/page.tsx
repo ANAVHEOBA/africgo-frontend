@@ -3,7 +3,7 @@ import OrderList from "@/components/account/orders/OrderList"
 
 export const metadata: Metadata = {
   title: "My Orders | GoFromA2zAfrica",
-  description: "View and track your orders from GoFromA2zAfrica",
+  description: "View and manage your orders",
 }
 
 export default function OrdersPage() {

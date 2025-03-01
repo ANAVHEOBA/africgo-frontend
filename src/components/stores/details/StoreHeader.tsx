@@ -1,13 +1,16 @@
 "use client"
 
 import { Store } from '@/lib/stores/types'
-import { memo } from 'react'
+import { memo, useState } from 'react'
+import RatingForm from "@/components/stores/RatingForm"
 
 interface StoreHeaderProps {
   store: Store
 }
 
 const StoreHeader = memo(function StoreHeader({ store }: StoreHeaderProps) {
+  const [showRatingForm, setShowRatingForm] = useState(false)
+
   return (
     <div className="bg-black/5 border border-gold-primary/20 rounded-lg p-6 space-y-4 hover:border-gold-primary transition-all">
       <div className="flex justify-between items-start">
@@ -99,6 +102,14 @@ const StoreHeader = memo(function StoreHeader({ store }: StoreHeaderProps) {
           )}
         </div>
       )}
+
+      <button
+        onClick={() => setShowRatingForm(true)}
+        className="px-4 py-2 rounded-lg bg-gold-primary text-dark-primary
+          hover:bg-gold-secondary transition-colors"
+      >
+        Rate Store
+      </button>
     </div>
   )
 })

@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { motion } from "framer-motion"
+import Logo from "@/components/ui/logo"
 
 export default function AccountHeader() {
   const router = useRouter()
@@ -14,18 +14,25 @@ export default function AccountHeader() {
 
   return (
     <header className="bg-dark-secondary border-b border-white/10">
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-semibold text-white">My Account</h1>
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+      <div className="px-4 h-16 flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <Logo />
+          <span className="text-white font-medium">Account Dashboard</span>
+        </div>
+
+        <div className="flex items-center space-x-4">
+          <button
+            onClick={() => router.push('/account/stores')}
+            className="text-white/70 hover:text-white transition-colors"
+          >
+            Browse Stores
+          </button>
+          <button
             onClick={handleLogout}
-            className="px-4 py-2 text-text-secondary hover:text-white
-              transition-colors"
+            className="text-white/70 hover:text-white transition-colors"
           >
             Logout
-          </motion.button>
+          </button>
         </div>
       </div>
     </header>

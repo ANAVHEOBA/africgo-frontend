@@ -4,27 +4,22 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Product } from '@/lib/stores/types'
-import LoginRequiredModal from '@/components/ui/LoginRequiredModal'
+import OrderForm from '@/components/account/orders/OrderForm'
 
-interface StoreProductCardProps {
+interface ProductCardProps {
   product: Product
   storeId: string
-  isConsumerDashboard?: boolean
 }
 
-export default function StoreProductCard({ 
-  product, 
-  storeId, 
-  isConsumerDashboard = false 
-}: StoreProductCardProps) {
+export default function ProductCard({ product, storeId }: ProductCardProps) {
   const router = useRouter()
   const isMounted = useRef(true)
+  const [showOrderForm, setShowOrderForm] = useState(false)
+  const [quantity, setQuantity] = useState(1)
   const [imageUrl, setImageUrl] = useState<string>('')
   const [imageError, setImageError] = useState(false)
   const [isImageLoading, setIsImageLoading] = useState(true)
   const [isVisible, setIsVisible] = useState(false)
-  const [showLoginModal, setShowLoginModal] = useState(false)
-  const [quantity, setQuantity] = useState(1)
 
   // Use intersection observer to detect when card is visible
   useEffect(() => {
@@ -38,7 +33,7 @@ export default function StoreProductCard({
       { threshold: 0.1 }
     )
 
-    const element = document.getElementById(`store-product-${product._id}`)
+    const element = document.getElementById(`product-${product._id}`)
     if (element) {
       observer.observe(element)
     }
@@ -74,30 +69,16 @@ export default function StoreProductCard({
     }
   }, [])
 
-  const handleOrderClick = () => {
-    const token = localStorage.getItem('token')
-    const userType = localStorage.getItem('userType')
-
-    if (!token || userType !== 'consumer') {
-      setShowLoginModal(true)
-      return
-    }
-
-    // If we're already in consumer dashboard, handle order
-    if (isConsumerDashboard) {
-      router.push(`/account/orders/new?productId=${product._id}&storeId=${storeId}`)
-    } else {
-      // Redirect to consumer dashboard with product info
-      router.push(`/account/stores?productId=${product._id}&storeId=${storeId}`)
-    }
+  const handleOrder = () => {
+    setShowOrderForm(true)
   }
 
   return (
     <>
       <div 
-        id={`store-product-${product._id}`}
+        id={`product-${product._id}`}
         className="bg-black/5 rounded-lg shadow-md overflow-hidden border border-gold-primary/20 
-          hover:border-gold-primary transition-all hover:shadow-lg group"
+          hover:border-gold-primary transition-all hover:shadow-lg"
       >
         {/* Product Image */}
         <div className="relative h-48 bg-black/10">
@@ -172,24 +153,29 @@ export default function StoreProductCard({
           {/* Order Button */}
           <button
             className="w-full py-2 bg-gold-primary text-white rounded-lg 
-              hover:bg-gold-secondary transition-colors mt-3
-              disabled:opacity-50 disabled:cursor-not-allowed
-              group-hover:bg-gold-secondary"
+              hover:bg-gold-secondary transition-colors
+              disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={product.stock === 0}
-            onClick={handleOrderClick}
+            onClick={handleOrder}
           >
-            {isConsumerDashboard ? 'Place Order' : 'Order as Consumer'}
+            Place Order
           </button>
         </div>
       </div>
 
-      {/* Login Required Modal */}
-      {showLoginModal && (
-        <LoginRequiredModal
-          onClose={() => setShowLoginModal(false)}
-          onLogin={() => router.push('/login')}
-          onRegister={() => router.push('/register')}
-        />
+      {/* Order Form Modal */}
+      {showOrderForm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="max-h-[90vh] overflow-y-auto">
+            <OrderForm
+              storeId={storeId}
+              productId={product._id}
+              quantity={quantity}
+              onSuccess={() => setShowOrderForm(false)}
+              onCancel={() => setShowOrderForm(false)}
+            />
+          </div>
+        </div>
       )}
     </>
   )

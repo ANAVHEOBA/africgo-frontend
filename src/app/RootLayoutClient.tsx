@@ -9,11 +9,14 @@ export default function RootLayoutClient({
   children: React.ReactNode
 }) {
   const pathname = usePathname();
+  
+  // Add account to the exclusion checks
   const isDashboard = pathname?.startsWith('/dashboard');
   const isAuth = pathname?.startsWith('/login') || pathname?.startsWith('/register');
+  const isAccount = pathname?.startsWith('/account');
 
-  // Return raw children for dashboard and auth routes
-  if (isDashboard || isAuth) {
+  // Return raw children for dashboard, auth, and account routes
+  if (isDashboard || isAuth || isAccount) {
     return children;
   }
 
