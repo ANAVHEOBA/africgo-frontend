@@ -1,58 +1,64 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import Link from "next/link"
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { motion } from "framer-motion";
+import Link from "next/link";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function LoginForm() {
-  const router = useRouter()
-  const [accountType, setAccountType] = useState<"merchant" | "consumer">("merchant")
+  const router = useRouter();
+  const [accountType, setAccountType] = useState<"merchant" | "consumer">(
+    "merchant"
+  );
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-  })
+  });
 
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle")
-  const [message, setMessage] = useState("")
+  const [status, setStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
+  const [message, setMessage] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setStatus("loading")
-    setMessage("")
+    e.preventDefault();
+    setStatus("loading");
+    setMessage("");
 
-    const endpoint = accountType === "merchant" 
-      ? "/api/users/login"
-      : "/api/consumers/login"
+    const endpoint =
+      accountType === "merchant" ? "/api/users/login" : "/api/consumers/login";
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      })
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}${endpoint}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (response.ok) {
-        setStatus("success")
-        localStorage.setItem('token', data.data.token)
-        localStorage.setItem('userType', accountType)
-        
+        setStatus("success");
+        localStorage.setItem("token", data.data.token);
+        localStorage.setItem("userType", accountType);
+
         // Redirect based on account type
-        router.replace(accountType === "merchant" ? '/dashboard' : '/account')
+        router.replace(accountType === "merchant" ? "/dashboard" : "/account");
       } else {
-        setStatus("error")
-        setMessage(data.message || "Login failed. Please try again.")
+        setStatus("error");
+        setMessage(data.message || "Login failed. Please try again.");
       }
     } catch (err) {
-      console.error('Login error:', err)
-      setStatus("error")
-      setMessage("An error occurred. Please try again.")
+      console.error("Login error:", err);
+      setStatus("error");
+      setMessage("An error occurred. Please try again.");
     }
-  }
+  };
 
   return (
     <motion.div
@@ -66,9 +72,7 @@ export default function LoginForm() {
         <h1 className="text-display-small font-bold hero-gradient-text mb-4">
           Welcome Back
         </h1>
-        <p className="text-text-secondary text-lg">
-          Log in to your account
-        </p>
+        <p className="text-text-secondary text-lg">Log in to your account</p>
       </div>
 
       {/* Login Form */}
@@ -87,8 +91,8 @@ export default function LoginForm() {
               type="button"
               onClick={() => setAccountType("merchant")}
               className={`flex-1 py-2 px-4 rounded ${
-                accountType === "merchant" 
-                  ? "bg-gold-primary text-dark-primary" 
+                accountType === "merchant"
+                  ? "bg-gold-primary text-dark-primary"
                   : "bg-dark-secondary text-white"
               }`}
             >
@@ -98,8 +102,8 @@ export default function LoginForm() {
               type="button"
               onClick={() => setAccountType("consumer")}
               className={`flex-1 py-2 px-4 rounded ${
-                accountType === "consumer" 
-                  ? "bg-gold-primary text-dark-primary" 
+                accountType === "consumer"
+                  ? "bg-gold-primary text-dark-primary"
                   : "bg-dark-secondary text-white"
               }`}
             >
@@ -117,7 +121,9 @@ export default function LoginForm() {
             type="email"
             id="email"
             value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, email: e.target.value })
+            }
             className="w-full px-4 py-3 bg-dark-secondary border border-white/10 rounded-lg
               text-white placeholder:text-gray-400
               focus:outline-none focus:ring-2 focus:ring-gold-primary focus:border-transparent
@@ -136,7 +142,9 @@ export default function LoginForm() {
             type="password"
             id="password"
             value={formData.password}
-            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, password: e.target.value })
+            }
             className="w-full px-4 py-3 bg-dark-secondary border border-white/10 rounded-lg
               text-white placeholder:text-gray-400
               focus:outline-none focus:ring-2 focus:ring-gold-primary focus:border-transparent
@@ -178,7 +186,7 @@ export default function LoginForm() {
         </Link>
       </motion.div>
     </motion.div>
-  )
+  );
 }
 
 // Helper Components (same as RegisterForm)
@@ -188,7 +196,11 @@ const SubmitButton = ({ status, text }: { status: string; text: string }) => (
     disabled={status === "loading"}
     className={`relative w-full px-6 py-4 bg-gradient-to-r from-gold-primary to-gold-secondary 
       rounded-lg text-dark-primary font-medium overflow-hidden
-      ${status === "loading" ? "opacity-75 cursor-not-allowed" : "hover:shadow-lg hover:shadow-gold-primary/20"}
+      ${
+        status === "loading"
+          ? "opacity-75 cursor-not-allowed"
+          : "hover:shadow-lg hover:shadow-gold-primary/20"
+      }
       transition-all duration-300`}
     whileHover={{ scale: status === "loading" ? 1 : 1.02 }}
     whileTap={{ scale: status === "loading" ? 1 : 0.98 }}
@@ -197,7 +209,7 @@ const SubmitButton = ({ status, text }: { status: string; text: string }) => (
       {status === "loading" ? <LoadingDots /> : text}
     </span>
   </motion.button>
-)
+);
 
 const LoadingDots = () => (
   <div className="flex items-center justify-center space-x-2">
@@ -210,9 +222,15 @@ const LoadingDots = () => (
       />
     ))}
   </div>
-)
+);
 
-const StatusMessage = ({ status, message }: { status: string; message: string }) => (
+const StatusMessage = ({
+  status,
+  message,
+}: {
+  status: string;
+  message: string;
+}) =>
   message && (
     <motion.p
       initial={{ opacity: 0, y: -10 }}
@@ -223,5 +241,4 @@ const StatusMessage = ({ status, message }: { status: string; message: string })
     >
       {message}
     </motion.p>
-  )
-) 
+  );
