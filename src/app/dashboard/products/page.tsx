@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import { Suspense, memo } from 'react'
-import Link from "next/link"
-import ProductList from "@/components/dashboard/products/ProductList"
+import { Suspense, memo } from "react";
+import Link from "next/link";
+import ProductList from "@/components/dashboard/products/ProductList";
 
 const LoadingFallback = () => (
   <div className="animate-pulse">
@@ -13,17 +13,17 @@ const LoadingFallback = () => (
       ))}
     </div>
   </div>
-)
+);
 
 const ProductsPage = memo(function ProductsPage() {
-  console.log("=== Products Page Debug ===")
-  console.log("Rendering Products Page")
+  console.log("=== Products Page Debug ===");
+  console.log("Rendering Products Page");
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Products</h1>
-        <Link 
+        <Link
           href="/dashboard/products/new"
           className="px-4 py-2 bg-gold-primary text-white rounded-lg hover:bg-gold-secondary"
         >
@@ -34,7 +34,7 @@ const ProductsPage = memo(function ProductsPage() {
         <ProductList />
       </Suspense>
     </div>
-  )
-})
+  );
+});
 
-export default ProductsPage 
+export default ProductsPage;
