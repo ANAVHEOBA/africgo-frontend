@@ -1,81 +1,82 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useCallback, useRef } from 'react'
-import Image from 'next/image'
-import { useRouter } from 'next/navigation'
-import { Product } from '@/lib/stores/types'
-import OrderForm from '@/components/account/orders/OrderForm'
+import { useState, useEffect, useCallback, useRef } from "react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { Product } from "@/lib/stores/types";
+import OrderForm from "@/components/account/orders/OrderForm";
 
 interface ProductCardProps {
-  product: Product
-  storeId: string
+  product: Product;
+  storeId: string;
 }
 
 export default function ProductCard({ product, storeId }: ProductCardProps) {
-  const router = useRouter()
-  const isMounted = useRef(true)
-  const [showOrderForm, setShowOrderForm] = useState(false)
-  const [quantity, setQuantity] = useState(1)
-  const [imageUrl, setImageUrl] = useState<string>('')
-  const [imageError, setImageError] = useState(false)
-  const [isImageLoading, setIsImageLoading] = useState(true)
-  const [isVisible, setIsVisible] = useState(false)
+  const router = useRouter();
+  const isMounted = useRef(true);
+  const [showOrderForm, setShowOrderForm] = useState(false);
+  const [quantity, setQuantity] = useState(1);
+  const [imageUrl, setImageUrl] = useState<string>("");
+  const [imageError, setImageError] = useState(false);
+  const [isImageLoading, setIsImageLoading] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
 
   // Use intersection observer to detect when card is visible
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setIsVisible(true)
-          observer.disconnect()
+          setIsVisible(true);
+          observer.disconnect();
         }
       },
       { threshold: 0.1 }
-    )
+    );
 
-    const element = document.getElementById(`product-${product._id}`)
+    const element = document.getElementById(`product-${product._id}`);
     if (element) {
-      observer.observe(element)
+      observer.observe(element);
     }
 
     return () => {
-      observer.disconnect()
-    }
-  }, [product._id])
+      observer.disconnect();
+    };
+  }, [product._id]);
 
   // Set image URL
   useEffect(() => {
-    const url = process.env.NODE_ENV === 'development'
-      ? `https://picsum.photos/seed/${product._id}/400/300`
-      : product.images[0] || ''
-    
-    setImageUrl(url)
+    const url =
+      process.env.NODE_ENV === "development"
+        ? `https://picsum.photos/seed/${product._id}/400/300`
+        : product.images[0] || "";
+
+    setImageUrl(url);
 
     return () => {
-      isMounted.current = false
-    }
-  }, [product._id, product.images])
+      isMounted.current = false;
+    };
+  }, [product._id, product.images]);
 
   const handleImageLoad = useCallback(() => {
     if (isMounted.current) {
-      setIsImageLoading(false)
+      setIsImageLoading(false);
     }
-  }, [])
+  }, []);
 
   const handleImageError = useCallback(() => {
     if (isMounted.current) {
-      setImageError(true)
-      setIsImageLoading(false)
+      setImageError(true);
+      setIsImageLoading(false);
     }
-  }, [])
+  }, []);
 
   const handleOrder = () => {
-    setShowOrderForm(true)
-  }
+    setShowOrderForm(true);
+  };
 
   return (
     <>
-      <div 
+      <div
         id={`product-${product._id}`}
         className="bg-black/5 rounded-lg shadow-md overflow-hidden border border-gold-primary/20 
           hover:border-gold-primary transition-all hover:shadow-lg"
@@ -95,7 +96,7 @@ export default function ProductCard({ product, storeId }: ProductCardProps) {
                 fill
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 className={`object-cover transition-opacity duration-300 ${
-                  isImageLoading ? 'opacity-0' : 'opacity-100'
+                  isImageLoading ? "opacity-0" : "opacity-100"
                 }`}
                 onLoad={handleImageLoad}
                 onError={handleImageError}
@@ -112,27 +113,42 @@ export default function ProductCard({ product, storeId }: ProductCardProps) {
 
         {/* Product Info */}
         <div className="p-4 space-y-3">
-          <h3 className="font-semibold text-lg truncate text-gray-900" title={product.name}>
+          <h3
+            className="font-semibold text-lg truncate text-gray-900"
+            title={product.name}
+          >
             {product.name}
           </h3>
-          
-          <p className="text-gray-700 text-sm line-clamp-2" title={product.description}>
+
+          <p
+            className="text-gray-700 text-sm line-clamp-2"
+            title={product.description}
+          >
             {product.description}
           </p>
 
           <div className="flex justify-between items-center">
             <span className="text-lg font-bold text-gold-primary">
-              ${Number(product.price).toFixed(2)}
+              {/* ${Number(product.price).toFixed(2)} */}₦
+              {product.price.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
             </span>
             <span className="text-sm text-gray-700">
-              {product.stock > 0 ? `In Stock (${product.stock})` : 'Out of Stock'}
+              {product.stock > 0
+                ? `In Stock (${product.stock})`
+                : "Out of Stock"}
             </span>
           </div>
 
           {/* Quantity Selector */}
           {product.stock > 0 && (
             <div className="flex items-center space-x-2">
-              <label htmlFor={`quantity-${product._id}`} className="text-sm text-gray-700">
+              <label
+                htmlFor={`quantity-${product._id}`}
+                className="text-sm text-gray-700"
+              >
                 Quantity:
               </label>
               <select
@@ -178,5 +194,5 @@ export default function ProductCard({ product, storeId }: ProductCardProps) {
         </div>
       )}
     </>
-  )
-} 
+  );
+}

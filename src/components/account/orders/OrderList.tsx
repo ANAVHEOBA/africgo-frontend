@@ -1,37 +1,39 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { motion } from "framer-motion"
-import Link from "next/link"
-import { getOrders } from "@/lib/orders/api"
-import { Order } from "@/lib/orders/types"
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import Link from "next/link";
+import { getOrders } from "@/lib/orders/api";
+import { Order } from "@/lib/orders/types";
 
 export default function OrderList() {
-  const [orders, setOrders] = useState<Order[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState("")
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const data = await getOrders()
-        setOrders(data)
+        const data = await getOrders();
+        setOrders(data);
       } catch (error) {
-        setError(error instanceof Error ? error.message : "Failed to fetch orders")
+        setError(
+          error instanceof Error ? error.message : "Failed to fetch orders"
+        );
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchOrders()
-  }, [])
+    fetchOrders();
+  }, []);
 
   if (loading) {
-    return <div className="text-white">Loading orders...</div>
+    return <div className="text-white">Loading orders...</div>;
   }
 
   if (error) {
-    return <div className="text-red-400">{error}</div>
+    return <div className="text-red-400">{error}</div>;
   }
 
   return (
@@ -63,12 +65,14 @@ export default function OrderList() {
                   </p>
                 </div>
                 <div className="text-right">
-                  <span className={`inline-block px-3 py-1 rounded-full text-sm
-                    ${order.status === 'DELIVERED' 
-                      ? 'bg-green-500/20 text-green-500'
-                      : order.status === 'PENDING'
-                      ? 'bg-yellow-500/20 text-yellow-500'
-                      : 'bg-blue-500/20 text-blue-500'
+                  <span
+                    className={`inline-block px-3 py-1 rounded-full text-sm
+                    ${
+                      order.status === "DELIVERED"
+                        ? "bg-green-500/20 text-green-500"
+                        : order.status === "PENDING"
+                        ? "bg-yellow-500/20 text-yellow-500"
+                        : "bg-blue-500/20 text-blue-500"
                     }`}
                   >
                     {order.status}
@@ -80,11 +84,19 @@ export default function OrderList() {
                 <div>
                   <p className="font-medium text-white">Delivery Address</p>
                   <p>{order.deliveryAddress.street}</p>
-                  <p>{order.deliveryAddress.city}, {order.deliveryAddress.state}</p>
+                  <p>
+                    {order.deliveryAddress.city}, {order.deliveryAddress.state}
+                  </p>
                 </div>
                 <div className="text-right">
                   <p className="font-medium text-white">Total Amount</p>
-                  <p className="text-gold-primary">${order.price.toFixed(2)}</p>
+                  <p className="text-gold-primary">
+                    ₦
+                    {order.price.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </p>
                 </div>
               </div>
             </Link>
@@ -92,5 +104,5 @@ export default function OrderList() {
         </motion.div>
       )}
     </div>
-  )
-} 
+  );
+}

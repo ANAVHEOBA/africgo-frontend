@@ -181,7 +181,11 @@ export default function ProductCard({ product, onDelete }: ProductCardProps) {
 
         <div className="flex justify-between items-center">
           <span className="text-lg font-bold text-gold-primary">
-            ₦{product.price.toFixed(2)}
+            ₦
+            {product.price.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
           </span>
           <span className="text-sm text-gray-700">Stock: {product.stock}</span>
         </div>

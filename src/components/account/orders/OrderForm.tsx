@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { motion } from "framer-motion"
-import { placeOrder } from "@/lib/orders/api"
-import { CreateOrderData } from "@/lib/orders/types"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { placeOrder } from "@/lib/orders/api";
+import { CreateOrderData } from "@/lib/orders/types";
 
 interface OrderFormProps {
   storeId: string;
@@ -14,66 +14,69 @@ interface OrderFormProps {
   onCancel?: () => void;
 }
 
-export default function OrderForm({ 
-  storeId, 
-  productId, 
+export default function OrderForm({
+  storeId,
+  productId,
   quantity,
   onSuccess,
-  onCancel 
+  onCancel,
 }: OrderFormProps) {
-  const router = useRouter()
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setLoading(true)
-    setError("")
+    e.preventDefault();
+    setLoading(true);
+    setError("");
 
-    const formData = new FormData(e.currentTarget)
-    
+    const formData = new FormData(e.currentTarget);
+
     const orderData: CreateOrderData = {
       storeId,
       items: [{ productId, quantity }],
       deliveryAddress: {
-        type: 'manual',
+        type: "manual",
         manualAddress: {
-          street: formData.get('street') as string,
-          city: formData.get('city') as string,
-          state: formData.get('state') as string,
-          country: formData.get('country') as string,
-          postalCode: formData.get('postalCode') as string,
-          recipientName: formData.get('recipientName') as string,
-          recipientPhone: formData.get('recipientPhone') as string,
-        }
+          street: formData.get("street") as string,
+          city: formData.get("city") as string,
+          state: formData.get("state") as string,
+          country: formData.get("country") as string,
+          postalCode: formData.get("postalCode") as string,
+          recipientName: formData.get("recipientName") as string,
+          recipientPhone: formData.get("recipientPhone") as string,
+        },
       },
       pickupAddress: {
-        type: 'manual',
+        type: "manual",
         manualAddress: {
-          street: formData.get('pickupStreet') as string,
-          city: formData.get('pickupCity') as string,
-          state: formData.get('pickupState') as string,
-          country: formData.get('pickupCountry') as string,
-          postalCode: formData.get('pickupPostalCode') as string,
-        }
+          street: formData.get("pickupStreet") as string,
+          city: formData.get("pickupCity") as string,
+          state: formData.get("pickupState") as string,
+          country: formData.get("pickupCountry") as string,
+          postalCode: formData.get("pickupPostalCode") as string,
+        },
       },
-      packageSize: formData.get('packageSize') as 'SMALL' | 'MEDIUM' | 'LARGE',
-      isFragile: formData.get('isFragile') === 'true',
-      isExpressDelivery: formData.get('isExpressDelivery') === 'true',
-      requiresSpecialHandling: formData.get('requiresSpecialHandling') === 'true',
-      specialInstructions: formData.get('specialInstructions') as string,
-    }
+      packageSize: formData.get("packageSize") as "SMALL" | "MEDIUM" | "LARGE",
+      isFragile: formData.get("isFragile") === "true",
+      isExpressDelivery: formData.get("isExpressDelivery") === "true",
+      requiresSpecialHandling:
+        formData.get("requiresSpecialHandling") === "true",
+      specialInstructions: formData.get("specialInstructions") as string,
+    };
 
     try {
-      const order = await placeOrder(orderData)
-      onSuccess?.(order._id)
-      router.push(`/account/orders/${order._id}`)
+      const order = await placeOrder(orderData);
+      onSuccess?.(order._id);
+      router.push(`/account/orders/${order._id}`);
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to place order')
+      setError(
+        error instanceof Error ? error.message : "Failed to place order"
+      );
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <motion.div
@@ -89,7 +92,10 @@ export default function OrderForm({
           <h3 className="text-lg font-medium text-white">Delivery Address</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="recipientName" className="block text-sm font-medium text-white mb-2">
+              <label
+                htmlFor="recipientName"
+                className="block text-sm font-medium text-white mb-2"
+              >
                 Recipient Name
               </label>
               <input
@@ -103,7 +109,10 @@ export default function OrderForm({
               />
             </div>
             <div>
-              <label htmlFor="recipientPhone" className="block text-sm font-medium text-white mb-2">
+              <label
+                htmlFor="recipientPhone"
+                className="block text-sm font-medium text-white mb-2"
+              >
                 Recipient Phone
               </label>
               <input
@@ -117,7 +126,10 @@ export default function OrderForm({
               />
             </div>
             <div className="md:col-span-2">
-              <label htmlFor="street" className="block text-sm font-medium text-white mb-2">
+              <label
+                htmlFor="street"
+                className="block text-sm font-medium text-white mb-2"
+              >
                 Street Address
               </label>
               <input
@@ -131,7 +143,10 @@ export default function OrderForm({
               />
             </div>
             <div>
-              <label htmlFor="city" className="block text-sm font-medium text-white mb-2">
+              <label
+                htmlFor="city"
+                className="block text-sm font-medium text-white mb-2"
+              >
                 City
               </label>
               <input
@@ -145,7 +160,10 @@ export default function OrderForm({
               />
             </div>
             <div>
-              <label htmlFor="state" className="block text-sm font-medium text-white mb-2">
+              <label
+                htmlFor="state"
+                className="block text-sm font-medium text-white mb-2"
+              >
                 State
               </label>
               <input
@@ -159,7 +177,10 @@ export default function OrderForm({
               />
             </div>
             <div>
-              <label htmlFor="country" className="block text-sm font-medium text-white mb-2">
+              <label
+                htmlFor="country"
+                className="block text-sm font-medium text-white mb-2"
+              >
                 Country
               </label>
               <input
@@ -173,7 +194,10 @@ export default function OrderForm({
               />
             </div>
             <div>
-              <label htmlFor="postalCode" className="block text-sm font-medium text-white mb-2">
+              <label
+                htmlFor="postalCode"
+                className="block text-sm font-medium text-white mb-2"
+              >
                 Postal Code
               </label>
               <input
@@ -194,7 +218,10 @@ export default function OrderForm({
           <h3 className="text-lg font-medium text-white">Package Details</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="packageSize" className="block text-sm font-medium text-white mb-2">
+              <label
+                htmlFor="packageSize"
+                className="block text-sm font-medium text-white mb-2"
+              >
                 Package Size
               </label>
               <select
@@ -248,14 +275,20 @@ export default function OrderForm({
                 className="w-4 h-4 border-white/10 rounded
                   text-gold-primary focus:ring-gold-primary"
               />
-              <label htmlFor="requiresSpecialHandling" className="text-sm text-white">
+              <label
+                htmlFor="requiresSpecialHandling"
+                className="text-sm text-white"
+              >
                 Special Handling
               </label>
             </div>
           </div>
 
           <div>
-            <label htmlFor="specialInstructions" className="block text-sm font-medium text-white mb-2">
+            <label
+              htmlFor="specialInstructions"
+              className="block text-sm font-medium text-white mb-2"
+            >
               Special Instructions
             </label>
             <textarea
@@ -276,14 +309,15 @@ export default function OrderForm({
             type="submit"
             disabled={loading}
             className={`flex-1 px-6 py-3 rounded-lg font-medium
-              ${loading 
-                ? "bg-gold-primary/50 cursor-not-allowed" 
-                : "bg-gold-primary hover:bg-gold-secondary"
+              ${
+                loading
+                  ? "bg-gold-primary/50 cursor-not-allowed"
+                  : "bg-gold-primary hover:bg-gold-secondary"
               } text-dark-primary transition-colors`}
           >
             {loading ? "Placing Order..." : "Place Order"}
           </button>
-          
+
           <button
             type="button"
             onClick={onCancel}
@@ -295,10 +329,8 @@ export default function OrderForm({
           </button>
         </div>
 
-        {error && (
-          <p className="text-red-400 text-sm">{error}</p>
-        )}
+        {error && <p className="text-red-400 text-sm">{error}</p>}
       </form>
     </motion.div>
-  )
-} 
+  );
+}
