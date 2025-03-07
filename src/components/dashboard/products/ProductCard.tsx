@@ -113,9 +113,9 @@ export default function ProductCard({ product, onDelete }: ProductCardProps) {
       case ProductStatus.OUT_OF_STOCK:
         return "bg-red-100 text-red-800";
       case ProductStatus.DISCONTINUED:
-        return "bg-gray-800/10 text-gray-800";
+        return "bg-gray-800/10 text-light-800";
       default:
-        return "bg-gray-800/10 text-gray-800";
+        return "bg-gray-800/10 text-light-800";
     }
   };
 
@@ -148,7 +148,7 @@ export default function ProductCard({ product, onDelete }: ProductCardProps) {
             />
           </>
         ) : (
-          <div className="flex items-center justify-center h-full text-gray-600">
+          <div className="flex items-center justify-center h-full text-light-600">
             <span>No Image</span>
           </div>
         )}
@@ -166,14 +166,14 @@ export default function ProductCard({ product, onDelete }: ProductCardProps) {
       {/* Product Info */}
       <div className="p-4 space-y-2">
         <h3
-          className="font-semibold text-lg truncate text-gray-900"
+          className="font-semibold text-lg truncate text-light-900"
           title={product.name}
         >
           {product.name}
         </h3>
 
         <p
-          className="text-gray-700 text-sm line-clamp-2"
+          className="text-light-700 text-sm line-clamp-2"
           title={product.description}
         >
           {product.description}
@@ -187,7 +187,7 @@ export default function ProductCard({ product, onDelete }: ProductCardProps) {
               maximumFractionDigits: 2,
             })}
           </span>
-          <span className="text-sm text-gray-700">Stock: {product.stock}</span>
+          <span className="text-sm text-light-700">Stock: {product.stock}</span>
         </div>
 
         {/* Action Buttons */}
