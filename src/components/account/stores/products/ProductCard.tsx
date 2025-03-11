@@ -8,10 +8,11 @@ import OrderForm from "@/components/account/orders/OrderForm";
 
 interface ProductCardProps {
   product: Product;
+  storeSlug: string;
   storeId: string;
 }
 
-export default function ProductCard({ product, storeId }: ProductCardProps) {
+export default function ProductCard({ product, storeSlug, storeId }: ProductCardProps) {
   const router = useRouter();
   const isMounted = useRef(true);
   const [showOrderForm, setShowOrderForm] = useState(false);

@@ -1,9 +1,7 @@
 export interface OrderItem {
   productId: string;
-  storeId: string;
   quantity: number;
-  price: number;
-  variantData: any[];
+  price?: number; // Add price field to OrderItem
 }
 
 export interface Address {
@@ -12,8 +10,8 @@ export interface Address {
   state: string;
   country: string;
   postalCode: string;
-  recipientName?: string;
-  recipientPhone?: string;
+  recipientName: string;
+  recipientPhone: string;
 }
 
 export interface Order {
@@ -37,18 +35,37 @@ export interface Order {
 
 export interface CreateOrderData {
   storeId: string;
-  items: { productId: string; quantity: number; }[];
+  items: [{
+    productId: string;
+    quantity: number;
+  }];
+  specialInstructions?: string;
   deliveryAddress: {
-    type: 'manual';
-    manualAddress: Address;
+    type: string;
+    manualAddress: {
+      street: string;
+      city: string;
+      state: string;
+      country: string;
+      postalCode: string;
+      recipientName: string;
+      recipientPhone: string;
+    };
   };
   pickupAddress: {
-    type: 'manual';
-    manualAddress: Address;
+    type: string;
+    manualAddress: {
+      street: string;
+      city: string;
+      state: string;
+      country: string;
+      postalCode: string;
+      recipientName: string;
+      recipientPhone: string;
+    };
   };
   packageSize: 'SMALL' | 'MEDIUM' | 'LARGE';
   isFragile: boolean;
   isExpressDelivery: boolean;
-  requiresSpecialHandling: boolean;
-  specialInstructions?: string;
-} 
+  zoneId: string;  // This comes from the selected delivery zone
+}

@@ -31,6 +31,7 @@ export interface Store {
     isVerified: boolean
     isFeaturedStore: boolean
     allowRatings: boolean
+    isActive: boolean
   }
   metrics: {
     totalOrders: number

@@ -47,7 +47,12 @@ export default function AccountStoreList() {
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
       >
         {stores.map((store) => (
-          <StoreCard key={store._id} store={store} />
+          <StoreCard 
+            key={store._id} 
+            store={store}
+            href={`/account/stores/${store.slug}`}
+            storeId={store._id}
+          />
         ))}
       </motion.div>
     </div>

@@ -4,13 +4,14 @@ import { useEffect, useState, useCallback } from 'react'
 import { getStoreProducts } from '@/lib/stores/api'
 import { Product } from '@/lib/stores/types'
 import ProductCard from './ProductCard'
-import { useStableDebounce } from '@/lib/utils'
+import { useStableDebounce } from '@/lib/hooks'
 
 interface ConsumerStoreProductsProps {
-  storeId: string
+  storeSlug: string;
+  storeId: string;
 }
 
-export default function ConsumerStoreProducts({ storeId }: ConsumerStoreProductsProps) {
+export default function ConsumerStoreProducts({ storeSlug, storeId }: ConsumerStoreProductsProps) {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -25,9 +26,12 @@ export default function ConsumerStoreProducts({ storeId }: ConsumerStoreProducts
   const debouncedFilters = useStableDebounce(filters, 500)
 
   const fetchProducts = useCallback(async (isLoadMore = false) => {
+    console.log('Fetching products for:', { storeSlug, storeId }) // Debug log
+    
     try {
       setLoading(true)
-      const response = await getStoreProducts(storeId, debouncedFilters)
+      const response = await getStoreProducts(storeSlug, debouncedFilters)
+      console.log('Products response:', response) // Debug log
       
       if (response?.products?.length > 0) {
         setProducts(prev => isLoadMore ? [...prev, ...response.products] : response.products)
@@ -40,15 +44,17 @@ export default function ConsumerStoreProducts({ storeId }: ConsumerStoreProducts
       }
       setError(null)
     } catch (error) {
+      console.error('Error fetching products:', error) // Debug log
       setError('Failed to load products. Please try again.')
     } finally {
       setLoading(false)
     }
-  }, [storeId, debouncedFilters])
+  }, [storeSlug, debouncedFilters])
 
   useEffect(() => {
     fetchProducts()
   }, [fetchProducts])
+
 
   if (loading && products.length === 0) {
     return (
@@ -74,6 +80,7 @@ export default function ConsumerStoreProducts({ storeId }: ConsumerStoreProducts
           <ProductCard 
             key={product._id} 
             product={product}
+            storeSlug={storeSlug}
             storeId={storeId}
           />
         ))}

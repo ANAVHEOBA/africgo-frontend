@@ -11,7 +11,7 @@ interface StoreCardProps {
 const StoreCard = memo(function StoreCard({ store }: StoreCardProps) {
   return (
     <Link
-      href={`/stores/${store.slug}`}
+      href={`/account/stores/${store.slug}`}
       className="block bg-black/5 rounded-lg shadow-md border border-gold-primary/20 hover:border-gold-primary transition-all hover:shadow-lg overflow-hidden"
     >
       <div className="p-4 space-y-4">

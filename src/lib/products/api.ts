@@ -158,4 +158,55 @@ export async function searchProducts(query: string, filters: ProductFilters = {}
   )
 
   return handleResponse<PaginatedProducts>(response)
+}
+
+// Add this new function to get products by store slug
+export async function getProductsByStore(storeSlug: string): Promise<PaginatedProducts> {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+
+  if (!token) {
+    throw new Error('Authentication token not found')
+  }
+
+  const cacheKey = `store-products-${storeSlug}`
+  
+  if (requestCache.has(cacheKey)) {
+    return requestCache.get(cacheKey)!
+  }
+
+  const request = fetch(
+    `${API_URL}/api/stores/${storeSlug}/products`,
+    {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      cache: 'no-store',
+    }
+  )
+  .then(async (response) => {
+    if (!response.ok) {
+      if (response.status === 401) {
+        localStorage.removeItem('token')
+        throw new Error('Authentication token expired')
+      }
+      const errorData = await response.json()
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
+    }
+    return response.json()
+  })
+  .then(data => {
+    if (!data.success) {
+      throw new Error(data.message || 'API request failed')
+    }
+    return data.data
+  })
+  .finally(() => {
+    // Remove from cache after request is complete
+    setTimeout(() => requestCache.delete(cacheKey), 0)
+  })
+
+  requestCache.set(cacheKey, request)
+  return request
 } 

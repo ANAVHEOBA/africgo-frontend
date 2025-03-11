@@ -7,6 +7,10 @@ async function handleResponse<T>(response: Response): Promise<T> {
   const data = await response.json()
   
   if (!response.ok) {
+    console.error('API Error:', {
+      status: response.status,
+      data
+    })
     throw new Error(data.message || 'API request failed')
   }
   
@@ -37,6 +41,12 @@ export async function getStores(filters: StoreFilters = {}): Promise<PaginatedSt
 
 // Get single store by slug
 export async function getStoreBySlug(slug: string): Promise<Store> {
+  if (!slug) {
+    throw new Error('Store slug is required')
+  }
+
+  console.log('Making API request to:', `${API_URL}/api/stores/${slug}`) // Debug log
+
   const response = await fetch(
     `${API_URL}/api/stores/${slug}`,
     {
@@ -46,16 +56,27 @@ export async function getStoreBySlug(slug: string): Promise<Store> {
     }
   )
 
-  return handleResponse<Store>(response)
+  const data = await response.json()
+  console.log('API Response:', data) // Debug log
+
+  if (!response.ok) {
+    console.error('API Error:', {
+      status: response.status,
+      data
+    })
+    throw new Error(data.message || 'API request failed')
+  }
+  
+  return data.data.store // Make sure we're accessing the correct path
 }
 
 // Get store products
-export async function getStoreProducts(storeSlug: string, filters: ProductFilters = {}): Promise<PaginatedProducts> {
-  if (!storeSlug) {
-    throw new Error('Store slug is required')
-  }
-
+export async function getStoreProducts(
+  storeSlug: string, 
+  filters: ProductFilters = {}
+): Promise<PaginatedProducts> {
   const queryParams = new URLSearchParams()
+  
   Object.entries(filters).forEach(([key, value]) => {
     if (value !== undefined && value !== null) {
       queryParams.append(key, value.toString())
@@ -65,11 +86,9 @@ export async function getStoreProducts(storeSlug: string, filters: ProductFilter
   const response = await fetch(
     `${API_URL}/api/stores/${storeSlug}/products?${queryParams.toString()}`,
     {
-      method: 'GET',
       headers: {
-        'Content-Type': 'application/json',
-      },
-      cache: 'no-store',
+        'Content-Type': 'application/json'
+      }
     }
   )
 
@@ -79,14 +98,11 @@ export async function getStoreProducts(storeSlug: string, filters: ProductFilter
     throw new Error(data.message || 'Failed to fetch products')
   }
 
-  // Match the response structure from your API
   return {
     products: data.data.products.map((product: any) => ({
       ...product,
       price: Number(product.price),
-      stock: Number(product.stock),
-      createdAt: product.createdAt,
-      updatedAt: product.updatedAt
+      stock: Number(product.stock)
     })),
     pagination: {
       total: data.data.total,

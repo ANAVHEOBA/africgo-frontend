@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, memo } from 'react'
 import { StoreFilters as StoreFiltersType } from '@/lib/stores/types'
-import { useDebounce } from '@/lib/utils'
+import { useDebounce } from '@/lib/hooks'
 
 interface StoreFiltersProps {
   filters: StoreFiltersType
