@@ -17,16 +17,26 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        'gold-primary': 'var(--gold-primary)',
-        'gold-secondary': 'var(--gold-secondary)',
-        'gold-accent': 'var(--gold-accent)',
-        'gold-highlight': 'var(--gold-highlight)',
-        'gold-glow': 'var(--gold-glow)',
-        'dark-primary': 'var(--dark-primary)',
-        'dark-secondary': 'var(--dark-secondary)',
-        'dark-tertiary': 'var(--dark-tertiary)',
-        'text-primary': 'var(--text-primary)',
-        'text-secondary': 'var(--text-secondary)',
+        'gold-primary': '#FF9900',    // Amazon's orange/gold
+        'gold-secondary': '#FFB700',
+        'gold-accent': '#FFA41C',
+        'gold-highlight': '#FFB84D',
+        'gold-glow': '#FFD700',
+        'dark-primary': '#FFFFFF',     // Changed to white
+        'dark-secondary': '#FAFAFA',   // Very light grey
+        'dark-tertiary': '#F5F5F5',    // Light background
+        'text-primary': '#0F1111',     // Amazon's text black
+        'text-secondary': '#565959',   // Amazon's secondary text
+      },
+      backgroundColor: {
+        'amazon-light': '#FFFFFF',     // Changed to white
+        'amazon-white': '#FFFFFF',
+      },
+      borderColor: {
+        'amazon-border': '#DDD',
+      },
+      boxShadow: {
+        'amazon': '0 2px 5px 0 rgba(213,217,217,.5)',
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',

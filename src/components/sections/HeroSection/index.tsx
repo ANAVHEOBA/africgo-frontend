@@ -19,7 +19,7 @@ export default function HeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
           >
-            Empowering African SMEs
+            Fast & Reliable Delivery Services
           </motion.h1>
 
           {/* Subtitle */}
@@ -29,8 +29,7 @@ export default function HeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
           >
-            Transform your business with cutting-edge digital solutions tailored
-            for Africa&apos;s unique market
+            Connect with local stores and get your items delivered quickly and securely
           </motion.p>
 
           {/* Features List */}
@@ -41,10 +40,10 @@ export default function HeroSection() {
             transition={{ duration: 0.8, ease: "easeOut", delay: 0.4 }}
           >
             {[
-              "E-commerce Solutions",
-              "Digital Transformation",
-              "Business Analytics",
+              "Same-Day Delivery",
+              "Real-Time Tracking",
               "Secure Payments",
+              "Local Stores",
             ].map((feature, index) => (
               <div key={feature} className="flex items-center space-x-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-gold-primary" />
@@ -60,24 +59,24 @@ export default function HeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut", delay: 0.6 }}
           >
-            <Link href="#benefits">
+            <Link href="/stores">
               <motion.button
-                className="px-8 py-4 rounded-lg border border-white/10 text-white 
-                    hover:border-gold-primary/50 hover:bg-gold-primary hover:text-white transition-all duration-300"
+                className="px-8 py-4 rounded-lg bg-gold-primary text-white 
+                    hover:bg-gold-secondary transition-all duration-300"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                Discover More
+                Find Stores Near You
               </motion.button>
             </Link>
-            <Link href="#how-it-works">
+            <Link href="/register">
               <motion.button
-                className="px-8 py-4 rounded-lg border border-white/10 text-white 
-                hover:border-gold-primary/50 hover:bg-gold-primary hover:text-white transition-all duration-300"
+                className="px-8 py-4 rounded-lg border border-gold-primary text-white 
+                hover:bg-gold-primary/10 transition-all duration-300"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                How It Works
+                Register Your Store
               </motion.button>
             </Link>
           </motion.div>

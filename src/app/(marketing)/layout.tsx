@@ -13,9 +13,9 @@ export default function MarketingLayout({
   const isStoresPage = pathname?.startsWith('/stores')
 
   return (
-    <>
+    <div className="bg-white">
       <ClientLayout>{children}</ClientLayout>
       {isStoresPage && <Footer />}
-    </>
+    </div>
   )
 } 
