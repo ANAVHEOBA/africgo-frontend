@@ -24,8 +24,8 @@ export default function AccountNav() {
               href={item.href}
               className={`block px-4 py-2 rounded-lg transition-colors ${
                 pathname === item.href
-                  ? "bg-gold-primary text-dark-primary"
-                  : "text-white/70 hover:text-white hover:bg-white/5"
+                  ? "bg-gold-primary text-white"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
               }`}
             >
               {item.label}

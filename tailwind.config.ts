@@ -17,19 +17,19 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        'gold-primary': '#FF9900',    // Amazon's orange/gold
-        'gold-secondary': '#FFB700',
-        'gold-accent': '#FFA41C',
-        'gold-highlight': '#FFB84D',
-        'gold-glow': '#FFD700',
-        'dark-primary': '#FFFFFF',     // Changed to white
+        'gold-primary': '#D4AF37',    // Classic gold
+        'gold-secondary': '#CFB53B',   // Rich gold
+        'gold-accent': '#C5A028',      // Deep gold
+        'gold-highlight': '#E6C640',   // Bright gold
+        'gold-glow': '#FFD700',        // Metallic gold
+        'dark-primary': '#FFFFFF',     // White
         'dark-secondary': '#FAFAFA',   // Very light grey
         'dark-tertiary': '#F5F5F5',    // Light background
-        'text-primary': '#0F1111',     // Amazon's text black
-        'text-secondary': '#565959',   // Amazon's secondary text
+        'text-primary': '#0F1111',     // Dark text
+        'text-secondary': '#565959',   // Secondary text
       },
       backgroundColor: {
-        'amazon-light': '#FFFFFF',     // Changed to white
+        'amazon-light': '#FFFFFF',
         'amazon-white': '#FFFFFF',
       },
       borderColor: {

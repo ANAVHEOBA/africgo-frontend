@@ -41,10 +41,10 @@ export default function AccountOverview() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-dark-secondary p-6 rounded-lg border border-white/10"
+        className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm"
       >
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-white">Profile Information</h2>
+          <h2 className="text-lg font-semibold text-gray-900">Profile Information</h2>
           <Link
             href="/account/profile"
             className="text-gold-primary hover:text-gold-secondary transition-colors"
@@ -54,18 +54,18 @@ export default function AccountOverview() {
         </div>
         
         {profile && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-white/70">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-600">
             <div>
               <p className="text-sm">Name</p>
-              <p className="text-white">{profile.firstName} {profile.lastName}</p>
+              <p className="text-gray-900">{profile.firstName} {profile.lastName}</p>
             </div>
             <div>
               <p className="text-sm">Email</p>
-              <p className="text-white">{profile.email}</p>
+              <p className="text-gray-900">{profile.email}</p>
             </div>
             <div>
               <p className="text-sm">Phone</p>
-              <p className="text-white">{profile.phone || 'Not set'}</p>
+              <p className="text-gray-900">{profile.phone || 'Not set'}</p>
             </div>
           </div>
         )}
@@ -77,8 +77,8 @@ export default function AccountOverview() {
         className="grid grid-cols-1 md:grid-cols-2 gap-6"
       >
         {/* Recent Orders */}
-        <div className="bg-dark-secondary p-6 rounded-lg border border-white/10">
-          <h2 className="text-lg font-semibold text-white mb-4">Recent Orders</h2>
+        <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Orders</h2>
           <Link
             href="/account/orders"
             className="text-gold-primary hover:text-gold-secondary transition-colors"
@@ -88,8 +88,8 @@ export default function AccountOverview() {
         </div>
 
         {/* Saved Addresses */}
-        <div className="bg-dark-secondary p-6 rounded-lg border border-white/10">
-          <h2 className="text-lg font-semibold text-white mb-4">Shipping Addresses</h2>
+        <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Shipping Addresses</h2>
           <Link
             href="/account/addresses"
             className="text-gold-primary hover:text-gold-secondary transition-colors"

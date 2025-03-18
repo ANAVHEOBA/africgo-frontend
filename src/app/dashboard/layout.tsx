@@ -34,11 +34,11 @@ const DashboardLayout = memo(function DashboardLayout({
   }
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-gray-50">
       <Sidebar currentPath={pathname} />
       <div className="flex-1">
         <TopNav />
-        <main className="p-8">{children}</main>
+        <main className="p-8 bg-gray-50">{children}</main>
       </div>
     </div>
   );

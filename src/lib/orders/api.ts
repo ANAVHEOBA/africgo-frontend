@@ -1,6 +1,6 @@
 import { Order, CreateOrderData } from "./types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://logistics-backend-1-s91j.onrender.com";
 
 // Helper to safely access localStorage (only in browser)
 const getToken = () => {
@@ -60,7 +60,7 @@ export async function getOrders(): Promise<Order[]> {
   if (!data.success) {
     throw new Error(data.message || "Failed to fetch orders");
   }
-  return data.data;
+  return data.data.orders;
 }
 
 export async function getOrderById(orderId: string): Promise<Order> {

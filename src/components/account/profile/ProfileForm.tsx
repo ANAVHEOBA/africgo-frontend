@@ -59,13 +59,13 @@ export default function ProfileForm() {
         animate={{ opacity: 1, y: 0 }}
         className="space-y-6"
       >
-        <h1 className="text-2xl font-bold text-white">Edit Profile</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Edit Profile</h1>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* First Name */}
             <div>
-              <label htmlFor="firstName" className="block text-sm font-medium text-white mb-2">
+              <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
                 First Name
               </label>
               <input
@@ -73,15 +73,15 @@ export default function ProfileForm() {
                 id="firstName"
                 name="firstName"
                 defaultValue={profile.firstName}
-                className="w-full px-4 py-2 bg-dark-secondary border border-white/10 rounded-lg
-                  text-white placeholder:text-gray-400
+                className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg
+                  text-gray-900 placeholder:text-gray-400
                   focus:outline-none focus:ring-2 focus:ring-gold-primary focus:border-transparent"
               />
             </div>
 
             {/* Last Name */}
             <div>
-              <label htmlFor="lastName" className="block text-sm font-medium text-white mb-2">
+              <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
                 Last Name
               </label>
               <input
@@ -89,8 +89,8 @@ export default function ProfileForm() {
                 id="lastName"
                 name="lastName"
                 defaultValue={profile.lastName}
-                className="w-full px-4 py-2 bg-dark-secondary border border-white/10 rounded-lg
-                  text-white placeholder:text-gray-400
+                className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg
+                  text-gray-900 placeholder:text-gray-400
                   focus:outline-none focus:ring-2 focus:ring-gold-primary focus:border-transparent"
               />
             </div>
@@ -98,7 +98,7 @@ export default function ProfileForm() {
 
           {/* Phone */}
           <div>
-            <label htmlFor="phone" className="block text-sm font-medium text-white mb-2">
+            <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
               Phone Number
             </label>
             <input
@@ -106,15 +106,15 @@ export default function ProfileForm() {
               id="phone"
               name="phone"
               defaultValue={profile.phone}
-              className="w-full px-4 py-2 bg-dark-secondary border border-white/10 rounded-lg
-                text-white placeholder:text-gray-400
+              className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg
+                text-gray-900 placeholder:text-gray-400
                 focus:outline-none focus:ring-2 focus:ring-gold-primary focus:border-transparent"
             />
           </div>
 
           {/* Email (read-only) */}
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-white mb-2">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
               Email Address
             </label>
             <input
@@ -122,8 +122,8 @@ export default function ProfileForm() {
               id="email"
               value={profile.email}
               disabled
-              className="w-full px-4 py-2 bg-dark-secondary/50 border border-white/10 rounded-lg
-                text-white/70 cursor-not-allowed"
+              className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg
+                text-gray-900/70 cursor-not-allowed"
             />
           </div>
 
@@ -135,7 +135,7 @@ export default function ProfileForm() {
               ${status === "loading"
                 ? "bg-gold-primary/50 cursor-not-allowed"
                 : "bg-gold-primary hover:bg-gold-secondary"
-              } text-dark-primary transition-colors`}
+              } text-white transition-colors`}
           >
             {status === "loading" ? "Updating..." : "Update Profile"}
           </button>

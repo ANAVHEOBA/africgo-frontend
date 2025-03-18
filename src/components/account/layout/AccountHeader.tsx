@@ -13,23 +13,23 @@ export default function AccountHeader() {
   }
 
   return (
-    <header className="bg-dark-secondary border-b border-white/10">
+    <header className="bg-white border-b border-gray-200">
       <div className="px-4 h-16 flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <Logo />
-          <span className="text-white font-medium">Account Dashboard</span>
+          <span className="text-gray-900 font-medium">Account Dashboard</span>
         </div>
 
         <div className="flex items-center space-x-4">
           <button
             onClick={() => router.push('/account/stores')}
-            className="text-white/70 hover:text-white transition-colors"
+            className="text-gray-600 hover:text-gold-primary transition-colors"
           >
             Browse Stores
           </button>
           <button
             onClick={handleLogout}
-            className="text-white/70 hover:text-white transition-colors"
+            className="text-gray-600 hover:text-gold-primary transition-colors"
           >
             Logout
           </button>

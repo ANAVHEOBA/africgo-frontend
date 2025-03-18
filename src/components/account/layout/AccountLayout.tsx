@@ -19,11 +19,11 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
   }, [router])
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-gray-50">
       <AccountHeader />
       <div className="flex-1 flex">
         {/* Sidebar */}
-        <aside className="w-64 bg-dark-secondary border-r border-white/10 hidden md:block">
+        <aside className="w-64 bg-white border-r border-gray-200 hidden md:block">
           <AccountNav />
         </aside>
 

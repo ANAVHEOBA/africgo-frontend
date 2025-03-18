@@ -29,15 +29,15 @@ export default function OrderDetails({ orderId }: { orderId: string }) {
   }, [orderId]);
 
   if (loading) {
-    return <div className="text-white">Loading order details...</div>;
+    return <div className="text-gray-600">Loading order details...</div>;
   }
 
   if (error) {
-    return <div className="text-red-400">{error}</div>;
+    return <div className="text-red-500">{error}</div>;
   }
 
   if (!order) {
-    return <div className="text-white">Order not found</div>;
+    return <div className="text-gray-600">Order not found</div>;
   }
 
   return (
@@ -47,7 +47,7 @@ export default function OrderDetails({ orderId }: { orderId: string }) {
       className="space-y-8"
     >
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-white">
+        <h1 className="text-2xl font-bold text-gray-900">
           Order #{order.trackingNumber}
         </h1>
         <Link
@@ -60,8 +60,8 @@ export default function OrderDetails({ orderId }: { orderId: string }) {
 
       <div className="grid gap-6">
         {/* Order Status */}
-        <div className="bg-dark-secondary p-6 rounded-lg border border-white/10">
-          <h2 className="text-lg font-semibold text-white mb-4">
+        <div className="bg-white p-6 rounded-lg border border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">
             Order Status
           </h2>
           <div className="flex items-center justify-between">
@@ -69,15 +69,15 @@ export default function OrderDetails({ orderId }: { orderId: string }) {
               className={`inline-block px-4 py-2 rounded-full
               ${
                 order.status === "DELIVERED"
-                  ? "bg-green-500/20 text-green-500"
+                  ? "bg-green-100 text-green-800"
                   : order.status === "PENDING"
-                  ? "bg-yellow-500/20 text-yellow-500"
-                  : "bg-blue-500/20 text-blue-500"
+                  ? "bg-yellow-100 text-yellow-800"
+                  : "bg-blue-100 text-blue-800"
               }`}
             >
               {order.status}
             </span>
-            <p className="text-white/70">
+            <p className="text-gray-600">
               Estimated Delivery:{" "}
               {new Date(order.estimatedDeliveryDate).toLocaleDateString()}
             </p>
@@ -85,24 +85,31 @@ export default function OrderDetails({ orderId }: { orderId: string }) {
         </div>
 
         {/* Order Items */}
-        <div className="bg-dark-secondary p-6 rounded-lg border border-white/10">
-          <h2 className="text-lg font-semibold text-white mb-4">Order Items</h2>
+        <div className="bg-white p-6 rounded-lg border border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            Order Items
+          </h2>
           <div className="space-y-4">
             {order.items.map((item) => (
               <div
                 key={item._id}
-                className="flex items-center justify-between py-4 border-b border-white/10 last:border-0"
+                className="flex justify-between items-center py-2 border-b border-gray-200 last:border-0"
               >
                 <div>
-                  <p className="text-white">Product ID: {item.productId}</p>
-                  <p className="text-white/70">Quantity: {item.quantity}</p>
+                  <p className="text-gray-900">Product ID: {item.productId}</p>
+                  <p className="text-gray-600">Quantity: {item.quantity}</p>
+                  {item.variantData && item.variantData.length > 0 && (
+                    <div className="text-sm text-gray-600">
+                      {item.variantData.map((variant) => (
+                        <p key={variant._id}>
+                          {variant.name}: {variant.value}
+                        </p>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <p className="text-gold-primary">
-                  ₦
-                  {order.price.toLocaleString(undefined, {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}
+                <p className="text-gold-primary font-medium">
+                  ₦{item.price.toLocaleString()}
                 </p>
               </div>
             ))}
@@ -112,47 +119,50 @@ export default function OrderDetails({ orderId }: { orderId: string }) {
         {/* Addresses */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Delivery Address */}
-          <div className="bg-dark-secondary p-6 rounded-lg border border-white/10">
-            <h2 className="text-lg font-semibold text-white mb-4">
+          <div className="bg-white p-6 rounded-lg border border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
               Delivery Address
             </h2>
-            <div className="space-y-2 text-white/70">
-              <p>{order.deliveryAddress.recipientName}</p>
-              <p>{order.deliveryAddress.street}</p>
+            <div className="space-y-2 text-gray-600">
+              <p>{order.deliveryAddress.manualAddress?.recipientName || order.deliveryAddress.recipientName}</p>
+              <p>{order.deliveryAddress.manualAddress?.street || order.deliveryAddress.street}</p>
               <p>
-                {order.deliveryAddress.city}, {order.deliveryAddress.state}
+                {order.deliveryAddress.manualAddress?.city || order.deliveryAddress.city}, 
+                {order.deliveryAddress.manualAddress?.state || order.deliveryAddress.state}
               </p>
               <p>
-                {order.deliveryAddress.country}{" "}
-                {order.deliveryAddress.postalCode}
+                {order.deliveryAddress.manualAddress?.country || order.deliveryAddress.country}{" "}
+                {order.deliveryAddress.manualAddress?.postalCode || order.deliveryAddress.postalCode}
               </p>
-              <p>Phone: {order.deliveryAddress.recipientPhone}</p>
+              <p>Phone: {order.deliveryAddress.manualAddress?.recipientPhone || order.deliveryAddress.recipientPhone}</p>
             </div>
           </div>
 
           {/* Pickup Address */}
-          <div className="bg-dark-secondary p-6 rounded-lg border border-white/10">
-            <h2 className="text-lg font-semibold text-white mb-4">
+          <div className="bg-white p-6 rounded-lg border border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
               Pickup Address
             </h2>
-            <div className="space-y-2 text-white/70">
-              <p>{order.pickupAddress.street}</p>
+            <div className="space-y-2 text-gray-600">
+              <p>{order.pickupAddress.manualAddress?.street || order.pickupAddress.street}</p>
               <p>
-                {order.pickupAddress.city}, {order.pickupAddress.state}
+                {order.pickupAddress.manualAddress?.city || order.pickupAddress.city}, 
+                {order.pickupAddress.manualAddress?.state || order.pickupAddress.state}
               </p>
               <p>
-                {order.pickupAddress.country} {order.pickupAddress.postalCode}
+                {order.pickupAddress.manualAddress?.country || order.pickupAddress.country}{" "}
+                {order.pickupAddress.manualAddress?.postalCode || order.pickupAddress.postalCode}
               </p>
             </div>
           </div>
         </div>
 
         {/* Order Details */}
-        <div className="bg-dark-secondary p-6 rounded-lg border border-white/10">
-          <h2 className="text-lg font-semibold text-white mb-4">
+        <div className="bg-white p-6 rounded-lg border border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">
             Shipping Details
           </h2>
-          <div className="grid grid-cols-2 gap-4 text-white/70">
+          <div className="grid grid-cols-2 gap-4 text-gray-600">
             <div>
               <p>Package Size: {order.packageSize}</p>
               <p>Fragile: {order.isFragile ? "Yes" : "No"}</p>
@@ -164,6 +174,9 @@ export default function OrderDetails({ orderId }: { orderId: string }) {
               </p>
               {order.specialInstructions && (
                 <p>Instructions: {order.specialInstructions}</p>
+              )}
+              {order.zonePrice && (
+                <p>Delivery Fee: ₦{order.zonePrice.toLocaleString()}</p>
               )}
             </div>
           </div>

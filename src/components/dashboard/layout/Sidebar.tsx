@@ -42,7 +42,7 @@ const Sidebar = memo(function Sidebar({
   currentPath: string 
 }) {
   return (
-    <aside className="w-64 min-h-screen bg-dark-secondary border-r border-white/10">
+    <aside className="w-64 min-h-screen bg-white border-r border-gray-200">
       <nav className="p-4 space-y-2">
         {navigationItems.map((item) => {
           const isActive = currentPath === item.href
@@ -54,7 +54,7 @@ const Sidebar = memo(function Sidebar({
               className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors
                 ${isActive 
                   ? 'bg-gold-primary/10 text-gold-primary' 
-                  : 'text-text-secondary hover:bg-white/5 hover:text-white'
+                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                 }`}
             >
               <item.icon className={`w-5 h-5 ${isActive ? 'text-gold-primary' : 'text-current'}`} />
