@@ -29,6 +29,10 @@ const navItems = [
     name: "Stores",
     href: "/stores",
   },
+  {
+    label: "Track Order",
+    href: "/track",
+  },
 ];
 
 export default function MainNav({ className }: MainNavProps) {

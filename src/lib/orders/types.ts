@@ -30,6 +30,7 @@ export interface Address {
   postalCode?: string;
   recipientName?: string;
   recipientPhone?: string;
+  recipientEmail?: string;
 }
 
 export interface Order {
@@ -52,11 +53,17 @@ export interface Order {
   estimatedDeliveryDate: string;
   createdAt: string;
   updatedAt: string;
-  guestInfo?: {
-    email: string;
-    firstName: string;
-    lastName: string;
-    phone: string;
+  paymentInstructions?: {
+    bankDetails: {
+      accountName: string;
+      accountNumber: string;
+      bankName: string;
+    };
+    amount: number;
+    deliveryFee: number;
+    subtotal: number;
+    currency: string;
+    instructions: string;
   };
 }
 
@@ -65,8 +72,11 @@ export interface CreateOrderData {
   items: [{
     productId: string;
     quantity: number;
+    variantData?: Array<{
+      name: string;
+      value: string;
+    }>;
   }];
-  specialInstructions?: string;
   deliveryAddress: {
     type: string;
     manualAddress: {
@@ -77,22 +87,13 @@ export interface CreateOrderData {
       postalCode: string;
       recipientName: string;
       recipientPhone: string;
-    };
-  };
-  pickupAddress: {
-    type: string;
-    manualAddress: {
-      street: string;
-      city: string;
-      state: string;
-      country: string;
-      postalCode: string;
-      recipientName: string;
-      recipientPhone: string;
+      recipientEmail?: string;
     };
   };
   packageSize: 'SMALL' | 'MEDIUM' | 'LARGE';
   isFragile: boolean;
   isExpressDelivery: boolean;
+  specialInstructions?: string;
   zoneId: string;
+  paymentMethod: string;
 }

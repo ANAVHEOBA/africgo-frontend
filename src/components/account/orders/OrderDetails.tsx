@@ -3,19 +3,26 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { getOrderById } from "@/lib/orders/api";
+import { getOrderById, trackOrder } from "@/lib/orders/api";
 import { Order } from "@/lib/orders/types";
 
 export default function OrderDetails({ orderId }: { orderId: string }) {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [trackingData, setTrackingData] = useState<Order | null>(null);
+  const [trackingLoading, setTrackingLoading] = useState(false);
+  const [trackingError, setTrackingError] = useState("");
 
   useEffect(() => {
     const fetchOrder = async () => {
       try {
         const data = await getOrderById(orderId);
         setOrder(data);
+        // Automatically fetch tracking data when order is loaded
+        if (data.trackingNumber) {
+          await fetchTrackingData(data.trackingNumber);
+        }
       } catch (error) {
         setError(
           error instanceof Error ? error.message : "Failed to fetch order"
@@ -28,8 +35,23 @@ export default function OrderDetails({ orderId }: { orderId: string }) {
     fetchOrder();
   }, [orderId]);
 
+  const fetchTrackingData = async (trackingNumber: string) => {
+    setTrackingLoading(true);
+    setTrackingError("");
+    try {
+      const data = await trackOrder(trackingNumber);
+      setTrackingData(data);
+    } catch (error) {
+      setTrackingError(
+        error instanceof Error ? error.message : "Failed to track order"
+      );
+    } finally {
+      setTrackingLoading(false);
+    }
+  };
+
   if (loading) {
-    return <div className="text-gray-600">Loading order details...</div>;
+    return <div className="text-white">Loading order details...</div>;
   }
 
   if (error) {
@@ -37,7 +59,7 @@ export default function OrderDetails({ orderId }: { orderId: string }) {
   }
 
   if (!order) {
-    return <div className="text-gray-600">Order not found</div>;
+    return <div className="text-white">Order not found</div>;
   }
 
   return (
@@ -46,140 +68,129 @@ export default function OrderDetails({ orderId }: { orderId: string }) {
       animate={{ opacity: 1, y: 0 }}
       className="space-y-8"
     >
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">
+      <div className="flex items-center justify-between bg-gray-900 p-6 rounded-lg border-2 border-gray-700">
+        <h1 className="text-3xl font-bold text-white">
           Order #{order.trackingNumber}
         </h1>
         <Link
           href="/account/orders"
-          className="text-gold-primary hover:text-gold-secondary transition-colors"
+          className="text-gold-primary hover:text-gold-secondary transition-colors text-lg font-medium"
         >
           ← Back to Orders
         </Link>
       </div>
 
-      <div className="grid gap-6">
-        {/* Order Status */}
-        <div className="bg-white p-6 rounded-lg border border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            Order Status
-          </h2>
-          <div className="flex items-center justify-between">
-            <span
-              className={`inline-block px-4 py-2 rounded-full
-              ${
-                order.status === "DELIVERED"
-                  ? "bg-green-100 text-green-800"
-                  : order.status === "PENDING"
-                  ? "bg-yellow-100 text-yellow-800"
-                  : "bg-blue-100 text-blue-800"
-              }`}
-            >
-              {order.status}
-            </span>
-            <p className="text-gray-600">
-              Estimated Delivery:{" "}
-              {new Date(order.estimatedDeliveryDate).toLocaleDateString()}
-            </p>
-          </div>
-        </div>
-
-        {/* Order Items */}
-        <div className="bg-white p-6 rounded-lg border border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            Order Items
-          </h2>
-          <div className="space-y-4">
-            {order.items.map((item) => (
-              <div
-                key={item._id}
-                className="flex justify-between items-center py-2 border-b border-gray-200 last:border-0"
+      <div className="bg-gray-900 p-8 rounded-lg border-2 border-gray-700">
+        <div className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 border-b-2 border-gray-700 pb-8">
+            <div>
+              <h2 className="text-xl font-bold text-white mb-4">Order Status</h2>
+              <span
+                className={`inline-block px-6 py-3 rounded-full text-base font-bold
+                  ${
+                    order.status === "DELIVERED"
+                      ? "bg-green-600 text-white"
+                      : order.status === "PENDING"
+                      ? "bg-yellow-600 text-white"
+                      : "bg-blue-600 text-white"
+                  }`}
               >
-                <div>
-                  <p className="text-gray-900">Product ID: {item.productId}</p>
-                  <p className="text-gray-600">Quantity: {item.quantity}</p>
-                  {item.variantData && item.variantData.length > 0 && (
-                    <div className="text-sm text-gray-600">
-                      {item.variantData.map((variant) => (
-                        <p key={variant._id}>
-                          {variant.name}: {variant.value}
-                        </p>
-                      ))}
-                    </div>
-                  )}
+                {order.status}
+              </span>
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-white mb-2">Order Date</h3>
+              <p className="text-xl text-gold-primary font-medium">
+                {new Date(order.createdAt).toLocaleDateString()}
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 border-b-2 border-gray-700 pb-8">
+            <div>
+              <h2 className="text-xl font-bold text-white mb-4">Total Amount</h2>
+              <p className="text-3xl font-bold text-gold-primary">
+                ₦{order.price.toLocaleString()}
+              </p>
+              {order.zonePrice && (
+                <p className="text-lg text-white mt-2">
+                  Includes delivery fee: ₦{order.zonePrice.toLocaleString()}
+                </p>
+              )}
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-white mb-2">Estimated Delivery</h3>
+              <p className="text-xl text-gold-primary font-medium">
+                {new Date(order.estimatedDeliveryDate).toLocaleDateString()}
+              </p>
+            </div>
+          </div>
+
+          <div className="border-b-2 border-gray-700 pb-8">
+            <h2 className="text-xl font-bold text-white mb-6">Delivery Details</h2>
+            <div className="grid gap-6 bg-gray-800 p-6 rounded-lg">
+              <div className="flex flex-col">
+                <span className="text-lg font-bold text-white mb-1">Recipient</span>
+                <span className="text-xl text-gold-primary">
+                  {order.deliveryAddress.manualAddress?.recipientName || order.deliveryAddress.recipientName}
+                </span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-lg font-bold text-white mb-1">Address</span>
+                <span className="text-xl text-gold-primary">
+                  {order.deliveryAddress.manualAddress?.street || order.deliveryAddress.street},{" "}
+                  {order.deliveryAddress.manualAddress?.city || order.deliveryAddress.city}
+                </span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-lg font-bold text-white mb-1">Phone</span>
+                <span className="text-xl text-gold-primary">
+                  {order.deliveryAddress.manualAddress?.recipientPhone || order.deliveryAddress.recipientPhone}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="border-b-2 border-gray-700 pb-8">
+            <h2 className="text-xl font-bold text-white mb-6">Items</h2>
+            <div className="space-y-4">
+              {order.items.map((item) => (
+                <div key={item._id} className="flex justify-between items-start bg-gray-800 p-6 rounded-lg">
+                  <div className="space-y-3">
+                    <p className="text-lg text-white">
+                      <span className="font-bold">Product ID:</span> {item.productId}
+                    </p>
+                    <p className="text-lg text-white">
+                      <span className="font-bold">Quantity:</span> {item.quantity}
+                    </p>
+                    {item.variantData && item.variantData.length > 0 && (
+                      <div className="text-lg text-white">
+                        {item.variantData.map((variant) => (
+                          <p key={variant._id}>
+                            <span className="font-bold">{variant.name}:</span> {variant.value}
+                          </p>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-2xl font-bold text-gold-primary">
+                    ₦{item.price.toLocaleString()}
+                  </p>
                 </div>
-                <p className="text-gold-primary font-medium">
-                  ₦{item.price.toLocaleString()}
+              ))}
+            </div>
+          </div>
+
+          {order.specialInstructions && (
+            <div>
+              <h2 className="text-xl font-bold text-white mb-4">Special Instructions</h2>
+              <div className="bg-gray-800 p-6 rounded-lg">
+                <p className="text-lg text-white">
+                  {order.specialInstructions}
                 </p>
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Addresses */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Delivery Address */}
-          <div className="bg-white p-6 rounded-lg border border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              Delivery Address
-            </h2>
-            <div className="space-y-2 text-gray-600">
-              <p>{order.deliveryAddress.manualAddress?.recipientName || order.deliveryAddress.recipientName}</p>
-              <p>{order.deliveryAddress.manualAddress?.street || order.deliveryAddress.street}</p>
-              <p>
-                {order.deliveryAddress.manualAddress?.city || order.deliveryAddress.city}, 
-                {order.deliveryAddress.manualAddress?.state || order.deliveryAddress.state}
-              </p>
-              <p>
-                {order.deliveryAddress.manualAddress?.country || order.deliveryAddress.country}{" "}
-                {order.deliveryAddress.manualAddress?.postalCode || order.deliveryAddress.postalCode}
-              </p>
-              <p>Phone: {order.deliveryAddress.manualAddress?.recipientPhone || order.deliveryAddress.recipientPhone}</p>
             </div>
-          </div>
-
-          {/* Pickup Address */}
-          <div className="bg-white p-6 rounded-lg border border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              Pickup Address
-            </h2>
-            <div className="space-y-2 text-gray-600">
-              <p>{order.pickupAddress.manualAddress?.street || order.pickupAddress.street}</p>
-              <p>
-                {order.pickupAddress.manualAddress?.city || order.pickupAddress.city}, 
-                {order.pickupAddress.manualAddress?.state || order.pickupAddress.state}
-              </p>
-              <p>
-                {order.pickupAddress.manualAddress?.country || order.pickupAddress.country}{" "}
-                {order.pickupAddress.manualAddress?.postalCode || order.pickupAddress.postalCode}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Order Details */}
-        <div className="bg-white p-6 rounded-lg border border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            Shipping Details
-          </h2>
-          <div className="grid grid-cols-2 gap-4 text-gray-600">
-            <div>
-              <p>Package Size: {order.packageSize}</p>
-              <p>Fragile: {order.isFragile ? "Yes" : "No"}</p>
-              <p>Express Delivery: {order.isExpressDelivery ? "Yes" : "No"}</p>
-            </div>
-            <div>
-              <p>
-                Special Handling: {order.requiresSpecialHandling ? "Yes" : "No"}
-              </p>
-              {order.specialInstructions && (
-                <p>Instructions: {order.specialInstructions}</p>
-              )}
-              {order.zonePrice && (
-                <p>Delivery Fee: ₦{order.zonePrice.toLocaleString()}</p>
-              )}
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </motion.div>

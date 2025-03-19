@@ -45,7 +45,7 @@ export async function getStoreBySlug(slug: string): Promise<Store> {
     throw new Error('Store slug is required')
   }
 
-  console.log('Making API request to:', `${API_URL}/api/stores/${slug}`) // Debug log
+  console.log('Making API request to:', `${API_URL}/api/stores/${slug}`)
 
   const response = await fetch(
     `${API_URL}/api/stores/${slug}`,
@@ -57,9 +57,9 @@ export async function getStoreBySlug(slug: string): Promise<Store> {
   )
 
   const data = await response.json()
-  console.log('API Response:', data) // Debug log
+  console.log('API Response:', data)
 
-  if (!response.ok) {
+  if (!response.ok || !data.success) {
     console.error('API Error:', {
       status: response.status,
       data
@@ -67,7 +67,13 @@ export async function getStoreBySlug(slug: string): Promise<Store> {
     throw new Error(data.message || 'API request failed')
   }
   
-  return data.data.store // Make sure we're accessing the correct path
+  // Handle both response formats (direct store or nested store object)
+  const storeData = data.data.store || data.data
+  if (!storeData) {
+    throw new Error('Invalid store data received')
+  }
+  
+  return storeData
 }
 
 // Get store products
