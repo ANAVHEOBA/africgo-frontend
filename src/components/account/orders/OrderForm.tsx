@@ -118,21 +118,8 @@ export default function OrderForm({
       console.log('Submitting order with data:', JSON.stringify(orderData, null, 2));
       const order = await placeOrder(orderData);
       
-      // Show payment instructions
-      if (order.paymentInstructions) {
-        setError(`Please transfer ₦${order.paymentInstructions.amount.toLocaleString()} to:
-          Bank: ${order.paymentInstructions.bankDetails.bankName}
-          Account Name: ${order.paymentInstructions.bankDetails.accountName}
-          Account Number: ${order.paymentInstructions.bankDetails.accountNumber}
-          
-          ${order.paymentInstructions.instructions}`);
-        return;
-      }
-
-      if (onSuccess) {
-        onSuccess(order._id);
-      }
-      router.push(`/account/orders/${order._id}`);
+      // Redirect to payment page instead of showing instructions
+      router.push(`/account/orders/${order._id}/payment`);
     } catch (err) {
       console.error('Error placing order:', err);
       setError(err instanceof Error ? err.message : "Failed to place order");

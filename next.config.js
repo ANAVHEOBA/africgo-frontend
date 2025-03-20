@@ -31,6 +31,7 @@ const nextConfig = {
     minimumCacheTTL: 60,
     formats: ['image/webp'],
   },
+  distDir: '.next'
 }
 
 module.exports = nextConfig 

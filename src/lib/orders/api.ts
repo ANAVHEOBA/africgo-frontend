@@ -114,3 +114,29 @@ export async function trackOrder(trackingNumber: string): Promise<Order> {
     throw error;
   }
 }
+
+export async function confirmOrderPayment(orderId: string): Promise<Order> {
+  const token = getToken();
+  
+  try {
+    const response = await fetch(
+      `${API_URL}/api/orders/consumer/mark-payment/${orderId}`,
+      {
+        method: "POST",
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const data = await response.json();
+    if (!data.success) {
+      throw new Error(data.message || "Failed to confirm payment");
+    }
+    return data.data;
+  } catch (error) {
+    console.error('Payment confirmation error:', error);
+    throw error;
+  }
+}
