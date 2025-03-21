@@ -52,20 +52,55 @@ export async function placeOrder(orderData: CreateOrderData): Promise<Order> {
   }
 }
 
-export async function getOrders(): Promise<Order[]> {
-  const token = getToken();
-  const response = await fetch(`${API_URL}/api/orders/consumer/orders`, {
-    headers: {
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    cache: 'no-store'
-  });
+interface PaginatedResponse<T> {
+  success: boolean;
+  data: {
+    orders: T[];
+    total: number;
+    page?: number;
+    limit?: number;
+    totalPages?: number;
+  };
+  message?: string;
+}
 
-  const data = await response.json();
-  if (!data.success) {
-    throw new Error(data.message || "Failed to fetch orders");
+export async function getOrders(page: number = 1, limit: number = 10): Promise<PaginatedResponse<Order>> {
+  const token = getToken();
+  
+  try {
+    const response = await fetch(
+      `${API_URL}/api/orders/consumer/orders?page=${page}&limit=${limit}`,
+      {
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        cache: 'no-store'
+      }
+    );
+
+    const data = await response.json();
+    console.log('Orders response:', data);
+
+    if (!data.success) {
+      throw new Error(data.message || "Failed to fetch orders");
+    }
+
+    // Calculate total pages if not provided by the API
+    const totalPages = data.data.totalPages || Math.ceil(data.data.total / limit);
+
+    return {
+      ...data,
+      data: {
+        ...data.data,
+        totalPages,
+        page: page,
+        limit: limit
+      }
+    };
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+    throw error;
   }
-  return data.data.orders;
 }
 
 export async function getOrderById(orderId: string): Promise<Order> {

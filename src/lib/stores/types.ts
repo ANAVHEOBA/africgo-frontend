@@ -138,4 +138,104 @@ export interface CreateStoreRatingData {
   storeId: string;
   rating: number;
   review: string;
+}
+
+export type OrderStatus = 
+  | 'PENDING' 
+  | 'CONFIRMED' 
+  | 'READY_FOR_PICKUP'
+  | 'PICKED_UP' 
+  | 'IN_TRANSIT' 
+  | 'DELIVERED' 
+  | 'CANCELLED' 
+  | 'FAILED_DELIVERY';
+
+export interface StoreOrder {
+  _id: string;
+  orderId: string;
+  trackingNumber: string;
+  status: OrderStatus;
+  paymentStatus: string | null;
+  createdAt: string;
+  updatedAt: string;
+  userId: string;
+  price: number;
+  isExpressDelivery: boolean;
+  requiresSpecialHandling: boolean;
+  estimatedDeliveryDate: string;
+  estimatedWeight: number;
+  deliveryZone: string;
+  zonePrice: number;
+  items: Array<{
+    productId: string;
+    storeId: string;
+    quantity: number;
+    price: number;
+    productName: string;
+    productImage: string[];
+    variantData?: Array<{
+      name: string;
+      value: string;
+      _id: string;
+    }>;
+    _id: string;
+  }>;
+  pickupAddress: {
+    type: string;
+    manualAddress: {
+      street: string;
+      city: string;
+      state: string;
+      country: string;
+      postalCode: string;
+      recipientName: string;
+      recipientPhone: string;
+      recipientEmail: string;
+    };
+  };
+  deliveryAddress: {
+    street: string;
+    city: string;
+    state: string;
+    country: string;
+    postalCode: string;
+    recipientName: string;
+    recipientPhone: string;
+    recipientEmail: string;
+  };
+  specialInstructions: string | null;
+  isFragile: boolean;
+  packageSize: 'SMALL' | 'MEDIUM' | 'LARGE';
+}
+
+export interface PaginatedStoreOrders {
+  orders: StoreOrder[];
+  pagination: {
+    total: number;
+    page: number;
+    totalPages: number;
+  };
+}
+
+export interface StoreDashboardStats {
+  revenue: {
+    total: number;
+    today: number;
+    yesterday: number;
+    thisWeek: number;
+    thisMonth: number;
+    dailyAverage: number;
+  };
+  orders: number;
+}
+
+export interface StoreDashboardData {
+  stats: StoreDashboardStats;
+  recentOrders: StoreOrder[];
+  topProducts: Array<{
+    _id: string;
+    name: string;
+    totalSold: number;
+    revenue: number;
+  }>;
 } 

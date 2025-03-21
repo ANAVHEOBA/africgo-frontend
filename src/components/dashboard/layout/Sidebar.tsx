@@ -1,7 +1,8 @@
 "use client"
 
-import { memo } from 'react'
+import { memo, useEffect, useState } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
 const navigationItems = [
   {
@@ -36,16 +37,47 @@ const navigationItems = [
   },
 ] as const
 
-const Sidebar = memo(function Sidebar({ 
-  currentPath 
-}: { 
-  currentPath: string 
-}) {
+const Sidebar = memo(function Sidebar() {
+  const pathname = usePathname()
+  const [storeExists, setStoreExists] = useState(true)
+
+  useEffect(() => {
+    // Check if store exists
+    const checkStore = async () => {
+      try {
+        const token = localStorage.getItem('token')
+        if (!token) return
+
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/stores/my-store`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        })
+
+        const data = await response.json()
+        setStoreExists(response.ok && data.success)
+      } catch (error) {
+        console.error('Error checking store:', error)
+        setStoreExists(false)
+      }
+    }
+
+    checkStore()
+  }, [])
+
+  // Filter out certain navigation items if store doesn't exist
+  const availableItems = navigationItems.filter(item => {
+    if (!storeExists) {
+      return item.href === '/dashboard' // Only show dashboard when no store exists
+    }
+    return true
+  })
+
   return (
     <aside className="w-64 min-h-screen bg-white border-r border-gray-200">
       <nav className="p-4 space-y-2">
-        {navigationItems.map((item) => {
-          const isActive = currentPath === item.href
+        {availableItems.map((item) => {
+          const isActive = pathname === item.href
           
           return (
             <Link

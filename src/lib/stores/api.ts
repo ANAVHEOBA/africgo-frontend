@@ -1,4 +1,4 @@
-import { Store, StoreFilters, PaginatedStores, ProductFilters, PaginatedProducts, StoreRating, CreateStoreRatingData } from './types'
+import { Store, StoreFilters, PaginatedStores, ProductFilters, PaginatedProducts, StoreRating, CreateStoreRatingData, PaginatedStoreOrders, StoreOrder, StoreDashboardData } from './types'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
 
@@ -134,4 +134,150 @@ export async function rateStore(ratingData: CreateStoreRatingData): Promise<Stor
     throw new Error(data.message || 'Failed to rate store')
   }
   return data.data
+}
+
+export async function getStoreOrders(page: number = 1, limit: number = 10): Promise<PaginatedStoreOrders> {
+  const token = localStorage.getItem('token');
+  
+  if (!token) {
+    throw new Error('Authentication required');
+  }
+
+  try {
+    const response = await fetch(
+      `${API_URL}/api/stores/orders?page=${page}&limit=${limit}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        cache: 'no-store'
+      }
+    );
+
+    const data = await response.json();
+    
+    if (!data.success) {
+      throw new Error(data.message || 'Failed to fetch store orders');
+    }
+
+    return data.data;
+  } catch (error) {
+    console.error('Error fetching store orders:', error);
+    throw error;
+  }
+}
+
+export async function getStoreOrderById(orderId: string): Promise<StoreOrder> {
+  const token = localStorage.getItem('token');
+  
+  if (!token) {
+    throw new Error('Authentication required');
+  }
+
+  try {
+    const response = await fetch(
+      `${API_URL}/api/stores/orders/${orderId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        cache: 'no-store'
+      }
+    );
+
+    const data = await response.json();
+    
+    if (!response.ok || !data.success) {
+      throw new Error(data.message || 'Failed to fetch order details');
+    }
+
+    return data.data;
+  } catch (error) {
+    console.error('Error fetching order details:', error);
+    throw error;
+  }
+}
+
+export async function markOrderAsReady(orderId: string): Promise<StoreOrder> {
+  const token = localStorage.getItem('token');
+  
+  if (!token) {
+    throw new Error('Authentication required');
+  }
+
+  try {
+    const response = await fetch(
+      `${API_URL}/api/stores/orders/${orderId}/ready`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        cache: 'no-store'
+      }
+    );
+
+    const data = await response.json();
+    
+    if (!response.ok || !data.success) {
+      throw new Error(data.message || 'Failed to mark order as ready');
+    }
+
+    return data.data;
+  } catch (error) {
+    console.error('Error marking order as ready:', error);
+    throw error;
+  }
+}
+
+export async function getStoreDashboard(): Promise<StoreDashboardData> {
+  const token = localStorage.getItem('token');
+  
+  if (!token) {
+    throw new Error('Authentication required');
+  }
+
+  try {
+    const response = await fetch(
+      `${API_URL}/api/stores/dashboard`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        cache: 'no-store'
+      }
+    );
+
+    const data = await response.json();
+    
+    if (!response.ok || !data.success) {
+      throw new Error(data.message || 'Failed to fetch dashboard data');
+    }
+
+    // Format numbers to ensure they're all numeric
+    const formattedData = {
+      ...data.data,
+      stats: {
+        ...data.data.stats,
+        revenue: {
+          ...data.data.stats.revenue,
+          total: Number(data.data.stats.revenue.total),
+          today: Number(data.data.stats.revenue.today),
+          yesterday: Number(data.data.stats.revenue.yesterday),
+          thisWeek: Number(data.data.stats.revenue.thisWeek),
+          thisMonth: Number(data.data.stats.revenue.thisMonth),
+          dailyAverage: Number(data.data.stats.revenue.dailyAverage)
+        }
+      }
+    };
+
+    return formattedData;
+  } catch (error) {
+    console.error('Error fetching dashboard data:', error);
+    throw error;
+  }
 } 

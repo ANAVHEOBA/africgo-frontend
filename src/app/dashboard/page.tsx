@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from "framer-motion"
+import DashboardStats from "@/components/dashboard/stats/DashboardStats"
 
 interface StoreData {
   _id: string
@@ -243,161 +244,9 @@ export default function DashboardPage() {
 
   // Show dashboard if store exists
   return (
-    <div className="space-y-8 p-6">
-      {/* Welcome Section */}
-      <div className="bg-dark-secondary rounded-lg p-6 border border-white/10">
-        <h1 className="text-2xl font-bold text-white mb-2">
-          Welcome to {storeData?.storeName}
-        </h1>
-        <p className="text-text-secondary">
-          Here's an overview of your store's performance
-        </p>
-        <div className="mt-4 text-text-secondary">
-          <p>Status: <span className="capitalize">{storeData?.status.toLowerCase()}</span></p>
-          <p>Category: {storeData?.category}</p>
-        </div>
-      </div>
-
-      {/* Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <MetricCard
-          title="Total Orders"
-          value={storeData?.metrics.totalOrders || 0}
-          icon={OrderIcon}
-        />
-        <MetricCard
-          title="Total Products"
-          value={storeData?.metrics.totalProducts || 0}
-          icon={ProductIcon}
-        />
-        <MetricCard
-          title="Total Revenue"
-          value={`₦${(storeData?.metrics.totalRevenue || 0).toLocaleString()}`}
-          icon={RevenueIcon}
-        />
-      </div>
-
-      {/* Store Actions */}
-      <div className="bg-dark-secondary rounded-lg p-6 border border-white/10">
-        <h2 className="text-xl font-semibold text-white mb-4">Store Management</h2>
-        <div className="flex flex-wrap gap-4">
-          {storeData?.status === 'PENDING' && (
-            <button
-              onClick={handleActivateStore}
-              className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg
-                transition-colors duration-200 flex items-center gap-2"
-            >
-              <span>Activate Store</span>
-            </button>
-          )}
-          
-          <button
-            onClick={() => {
-              const updateData = {
-                description: prompt('Enter new store description:', storeData?.description) || storeData?.description
-              }
-              handleUpdateStore(updateData)
-            }}
-            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg
-              transition-colors duration-200 flex items-center gap-2"
-          >
-            <span>Update Store</span>
-          </button>
-
-          <button
-            onClick={handleDeleteStore}
-            className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg
-              transition-colors duration-200 flex items-center gap-2"
-          >
-            <span>Delete Store</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Store Settings */}
-      <div className="bg-dark-secondary rounded-lg p-6 border border-white/10">
-        <h2 className="text-xl font-semibold text-white mb-4">Store Settings</h2>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-dark-primary rounded-lg">
-            <div>
-              <h3 className="text-white font-medium">Allow Ratings</h3>
-              <p className="text-text-secondary text-sm">Enable customer ratings for your store</p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                className="sr-only peer"
-                checked={storeData?.settings?.allowRatings}
-                onChange={(e) => handleUpdateSettings({
-                  ...storeData?.settings,
-                  allowRatings: e.target.checked
-                })}
-              />
-              <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4
-                peer-focus:ring-gold-primary/20 rounded-full peer
-                peer-checked:after:translate-x-full peer-checked:after:border-white
-                after:content-[''] after:absolute after:top-[2px] after:left-[2px]
-                after:bg-white after:border-gray-300 after:border after:rounded-full
-                after:h-5 after:w-5 after:transition-all peer-checked:bg-gold-primary">
-              </div>
-            </label>
-          </div>
-
-          <div className="flex items-center justify-between p-4 bg-dark-primary rounded-lg">
-            <div>
-              <h3 className="text-white font-medium">Store Status</h3>
-              <p className="text-text-secondary text-sm">Current store status: {storeData?.status}</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className={`inline-flex h-3 w-3 rounded-full ${
-                storeData?.status === 'ACTIVE' ? 'bg-green-500' : 
-                storeData?.status === 'PENDING' ? 'bg-yellow-500' : 'bg-red-500'
-              }`}></span>
-              <span className="text-text-secondary capitalize">{storeData?.status.toLowerCase()}</span>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between p-4 bg-dark-primary rounded-lg">
-            <div>
-              <h3 className="text-white font-medium">Store Metrics</h3>
-              <p className="text-text-secondary text-sm">Last updated: {new Date().toLocaleTimeString()}</p>
-            </div>
-            <button
-              onClick={fetchStoreMetrics}
-              className="px-4 py-2 bg-gold-primary/10 text-gold-primary rounded-lg
-                hover:bg-gold-primary/20 transition-colors duration-200"
-            >
-              Refresh Metrics
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Store Details */}
-      <div className="bg-dark-secondary rounded-lg p-6 border border-white/10">
-        <h2 className="text-xl font-semibold text-white mb-4">Store Details</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <h3 className="text-lg font-medium text-white mb-2">Contact Information</h3>
-            <p className="text-text-secondary">Email: {storeData?.contactInfo.email}</p>
-            <p className="text-text-secondary">Phone: {storeData?.contactInfo.phone}</p>
-          </div>
-          <div>
-            <h3 className="text-lg font-medium text-white mb-2">Address</h3>
-            <p className="text-text-secondary">{storeData?.address.street}</p>
-            <p className="text-text-secondary">
-              {storeData?.address.city}, {storeData?.address.state}
-            </p>
-            <p className="text-text-secondary">{storeData?.address.country}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Recent Activity */}
-      <div className="bg-dark-secondary rounded-lg p-6 border border-white/10">
-        <h2 className="text-xl font-semibold text-white mb-4">Recent Activity</h2>
-        {/* Add recent orders, products, etc. */}
-      </div>
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-8">Dashboard</h1>
+      <DashboardStats />
     </div>
   )
 }

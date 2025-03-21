@@ -2,6 +2,13 @@ import { ConsumerProfile, UpdateProfileData } from "./types"
 
 export async function getProfile(): Promise<ConsumerProfile> {
   const token = localStorage.getItem('token')
+  const userType = localStorage.getItem('userType')
+
+  // Check if user is a consumer
+  if (userType !== 'consumer') {
+    throw new Error('Consumer access required')
+  }
+
   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/consumers/profile`, {
     headers: {
       'Authorization': `Bearer ${token}`,
