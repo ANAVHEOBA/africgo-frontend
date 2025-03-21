@@ -1,11 +1,12 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Product, CreateProductData, ProductStatus } from '@/lib/products/types'
 import { createProduct, updateProduct } from '@/lib/products/api'
 import ProductImages from './ProductImages'
 import ProductVariants from './ProductVariants'
+import { tokenStorage } from '@/lib/auth/tokenStorage'
 
 interface ProductFormProps {
   initialData?: Product
@@ -16,6 +17,17 @@ export default function ProductForm({ initialData, isEditing = false }: ProductF
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const token = tokenStorage.getToken()
+    const userType = tokenStorage.getUserType()
+    
+    if (!token || userType !== 'merchant') {
+      console.log('No valid merchant token found, redirecting to login')
+      router.replace('/login')
+      return
+    }
+  }, [router])
 
   const [formData, setFormData] = useState<CreateProductData>({
     name: initialData?.name || '',
@@ -78,11 +90,11 @@ export default function ProductForm({ initialData, isEditing = false }: ProductF
         ...formData,
         price: Number(formData.price) || 0,
         stock: Number(formData.stock) || 0,
-        variants: variants.map(variant => ({
+        variants: formData.variants?.map(variant => ({
           name: variant.name,
           options: variant.options,
           prices: variant.prices?.map(price => Number(price) || 0)
-        }))
+        })) || []
       }
 
       if (isEditing && initialData) {
@@ -92,6 +104,11 @@ export default function ProductForm({ initialData, isEditing = false }: ProductF
       }
       router.push('/dashboard/products')
     } catch (err) {
+      if (err instanceof Error && err.message === 'Authentication required') {
+        tokenStorage.clearToken()
+        router.replace('/login')
+        return
+      }
       console.error('Form submission error:', err)
       setError(err instanceof Error ? err.message : 'Failed to save product')
     } finally {

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from "framer-motion"
+import { tokenStorage } from '@/lib/auth/tokenStorage';
 
 interface StoreData {
   _id: string
@@ -41,8 +42,11 @@ export default function DashboardPage() {
   useEffect(() => {
     const checkStore = async () => {
       try {
-        const token = localStorage.getItem('token')
-        if (!token) return
+        const token = tokenStorage.getToken()
+        if (!token) {
+          router.replace('/login')
+          return
+        }
 
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/stores/my-store`, {
           headers: {
@@ -67,13 +71,13 @@ export default function DashboardPage() {
     }
 
     checkStore()
-  }, [])
+  }, [router])
 
   const handleUpdateStore = async (updateData: Partial<StoreData>) => {
     try {
-      const token = localStorage.getItem('token')
+      const token = tokenStorage.getToken()
       if (!token) {
-        setError("Authentication token not found")
+        router.replace('/login')
         return
       }
 
@@ -104,9 +108,9 @@ export default function DashboardPage() {
     }
 
     try {
-      const token = localStorage.getItem('token')
+      const token = tokenStorage.getToken()
       if (!token) {
-        setError("Authentication token not found")
+        router.replace('/login')
         return
       }
 
@@ -131,9 +135,9 @@ export default function DashboardPage() {
 
   const handleUpdateSettings = async (settings: any) => {
     try {
-      const token = localStorage.getItem('token')
+      const token = tokenStorage.getToken()
       if (!token) {
-        setError("Authentication token not found")
+        router.replace('/login')
         return
       }
 
@@ -160,7 +164,7 @@ export default function DashboardPage() {
 
   const handleActivateStore = async () => {
     try {
-      const token = localStorage.getItem('token')
+      const token = tokenStorage.getToken()
       if (!token) {
         setError("Authentication token not found")
         return
@@ -187,9 +191,9 @@ export default function DashboardPage() {
 
   const fetchStoreMetrics = async () => {
     try {
-      const token = localStorage.getItem('token')
+      const token = tokenStorage.getToken()
       if (!token) {
-        setError("Authentication token not found")
+        router.replace('/login')
         return
       }
 
@@ -201,7 +205,6 @@ export default function DashboardPage() {
 
       const data = await response.json()
       if (response.ok && data.success) {
-        // Update store metrics in state
         setStoreData(prev => prev ? { ...prev, metrics: data.data } : null)
       } else {
         console.error('Failed to fetch metrics:', data.message)

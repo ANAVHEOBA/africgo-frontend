@@ -118,7 +118,6 @@ export default function OrderForm({
       console.log('Submitting order with data:', JSON.stringify(orderData, null, 2));
       const order = await placeOrder(orderData);
       
-      // Redirect to payment page instead of showing instructions
       router.push(`/account/orders/${order._id}/payment`);
     } catch (err) {
       console.error('Error placing order:', err);

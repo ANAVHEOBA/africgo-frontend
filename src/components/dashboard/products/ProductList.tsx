@@ -6,7 +6,8 @@ import { getStoreProducts } from '@/lib/products/api'
 import ProductCard from './ProductCard'
 import ProductFilterComponent from './ProductFilters'
 import { useRouter } from 'next/navigation'
-import { useStableDebounce } from '@/lib/utils'
+import { useDebounce } from '@/lib/utils'
+import { tokenStorage } from '@/lib/auth/tokenStorage'
 
 const ProductList = memo(function ProductList() {
   const router = useRouter()
@@ -20,21 +21,42 @@ const ProductList = memo(function ProductList() {
   const [totalPages, setTotalPages] = useState(0)
   const [isInitialLoad, setIsInitialLoad] = useState(true)
 
-  const debouncedFilters = useStableDebounce(filters, 500)
+  const debouncedFilters = useDebounce(filters, 500)
 
   const fetchProducts = useCallback(async () => {
     if (!isInitialLoad) setLoading(true)
     try {
-      const data = await getStoreProducts(debouncedFilters)
-      setProducts(data.products)
-      setTotalPages(data.totalPages)
-      setError(null)
-    } catch (err) {
-      if (err instanceof Error && err.message === 'Authentication token not found') {
-        router.push('/auth/login')
+      const token = tokenStorage.getToken()
+      const userType = tokenStorage.getUserType()
+      
+      if (!token || userType !== 'merchant') {
+        console.log('No valid merchant token found, redirecting to login')
+        router.replace('/login')
         return
       }
+
+      console.log('Fetching products with token:', token)
+      const data = await getStoreProducts(debouncedFilters)
+      console.log('Products data received:', data)
+      
+      setProducts(data.products || [])
+      setTotalPages(data.totalPages || 1)
+      setError(null)
+    } catch (err) {
+      if (err instanceof Error) {
+        if (err.message === 'Authentication required') {
+          tokenStorage.clearToken()
+          router.replace('/login')
+          return
+        }
+        if (err.message === 'Store not found') {
+          setError('No store found. Please create a store first.')
+          router.replace('/dashboard/store/create')
+          return
+        }
+      }
       setError('Failed to load products. Please try again.')
+      console.error('Product fetch error:', err)
     } finally {
       setLoading(false)
       setIsInitialLoad(false)
@@ -43,10 +65,12 @@ const ProductList = memo(function ProductList() {
 
   useEffect(() => {
     let mounted = true
-    const token = localStorage.getItem('token')
+    const token = tokenStorage.getToken()
+    const userType = tokenStorage.getUserType()
     
-    if (!token) {
-      router.push('/auth/login')
+    if (!token || userType !== 'merchant') {
+      console.log('No valid merchant token found, redirecting to login')
+      router.replace('/login')
       return
     }
 
@@ -84,6 +108,20 @@ const ProductList = memo(function ProductList() {
         {[...Array(6)].map((_, i) => (
           <div key={i} className="bg-white rounded-lg shadow-md h-[400px] animate-pulse" />
         ))}
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-red-500">{error}</p>
+        <button 
+          onClick={fetchProducts}
+          className="mt-4 px-4 py-2 bg-gold-primary text-white rounded-lg hover:bg-gold-secondary"
+        >
+          Try Again
+        </button>
       </div>
     )
   }

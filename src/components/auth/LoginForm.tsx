@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { tokenStorage } from '@/lib/auth/tokenStorage';
 
 export default function LoginForm() {
   const router = useRouter();
@@ -29,6 +30,8 @@ export default function LoginForm() {
       accountType === "merchant" ? "/api/users/login" : "/api/consumers/login";
 
     try {
+      console.log('Attempting login:', { accountType, endpoint })
+      
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}${endpoint}`,
         {
@@ -41,17 +44,27 @@ export default function LoginForm() {
       );
 
       const data = await response.json();
+      console.log('Login response:', data);
 
-      if (response.ok) {
+      if (response.ok && data.data?.token) {
         setStatus("success");
-        localStorage.setItem("token", data.data.token);
-        localStorage.setItem("userType", accountType);
-
+        
+        // Store the token without 'Bearer ' prefix
+        const token = data.data.token.replace('Bearer ', '');
+        tokenStorage.setToken(token, accountType);
+        
+        console.log('Token stored:', { 
+          token: !!token, 
+          userType: accountType,
+          redirectTo: accountType === "merchant" ? "/dashboard" : "/account"
+        });
+        
         // Redirect based on account type
         router.replace(accountType === "merchant" ? "/dashboard" : "/account");
       } else {
         setStatus("error");
         setMessage(data.message || "Login failed. Please try again.");
+        console.error('Login failed:', data.message);
       }
     } catch (err) {
       console.error("Login error:", err);

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { getOrderById } from '@/lib/orders/api';
 import { Order } from '@/lib/orders/types';
 
@@ -9,6 +10,7 @@ interface OrderDetailsClientProps {
 }
 
 export default function OrderDetailsClient({ orderId }: OrderDetailsClientProps) {
+  const router = useRouter();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -22,23 +24,51 @@ export default function OrderDetailsClient({ orderId }: OrderDetailsClientProps)
       }
       
       try {
-        console.log("Fetching order with ID:", orderId);
         const orderData = await getOrderById(orderId);
         setOrder(orderData);
       } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to load order';
         console.error("Error fetching order:", err);
-        setError(err instanceof Error ? err.message : 'Failed to load order');
+        
+        if (errorMessage.includes("Authentication required") || 
+            errorMessage.includes("Please login as a consumer")) {
+          // Redirect to consumer login
+          router.push('/login?type=consumer');
+          return;
+        }
+        
+        setError(errorMessage);
       } finally {
         setLoading(false);
       }
     }
 
     fetchOrder();
-  }, [orderId]);
+  }, [orderId, router]);
 
-  if (loading) return <div className="text-gold-primary text-xl font-bold">Loading order details...</div>;
-  if (error) return <div className="text-red-500 text-xl font-bold">Error: {error}</div>;
-  if (!order) return <div className="text-gold-primary text-xl font-bold">Order not found</div>;
+  if (loading) {
+    return (
+      <div className="text-gold-primary text-xl font-bold">
+        Loading order details...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-red-500 text-xl font-bold">
+        Error: {error}
+      </div>
+    );
+  }
+
+  if (!order) {
+    return (
+      <div className="text-gold-primary text-xl font-bold">
+        Order not found
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gray-900 rounded-lg p-8 shadow-xl border-2 border-gray-700">

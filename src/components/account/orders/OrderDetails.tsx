@@ -5,8 +5,11 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { getOrderById, trackOrder } from "@/lib/orders/api";
 import { Order } from "@/lib/orders/types";
+import { tokenStorage } from '@/lib/auth/tokenStorage';
+import { useRouter } from 'next/navigation';
 
 export default function OrderDetails({ orderId }: { orderId: string }) {
+  const router = useRouter();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -15,15 +18,29 @@ export default function OrderDetails({ orderId }: { orderId: string }) {
   const [trackingError, setTrackingError] = useState("");
 
   useEffect(() => {
+    const token = tokenStorage.getToken();
+    const userType = tokenStorage.getUserType();
+    
+    if (!token || userType !== 'consumer') {
+      router.replace('/login');
+      return;
+    }
+
     const fetchOrder = async () => {
       try {
         const data = await getOrderById(orderId);
         setOrder(data);
-        // Automatically fetch tracking data when order is loaded
         if (data.trackingNumber) {
           await fetchTrackingData(data.trackingNumber);
         }
       } catch (error) {
+        if (error instanceof Error) {
+          if (error.message === 'Authentication required') {
+            tokenStorage.clearToken();
+            router.replace('/login');
+            return;
+          }
+        }
         setError(
           error instanceof Error ? error.message : "Failed to fetch order"
         );
@@ -33,7 +50,7 @@ export default function OrderDetails({ orderId }: { orderId: string }) {
     };
 
     fetchOrder();
-  }, [orderId]);
+  }, [orderId, router]);
 
   const fetchTrackingData = async (trackingNumber: string) => {
     setTrackingLoading(true);

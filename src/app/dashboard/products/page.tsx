@@ -1,8 +1,10 @@
 "use client";
 
-import { Suspense, memo } from "react";
+import { Suspense, memo, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import ProductList from "@/components/dashboard/products/ProductList";
+import { tokenStorage } from '@/lib/auth/tokenStorage';
 
 const LoadingFallback = () => (
   <div className="animate-pulse">
@@ -16,6 +18,19 @@ const LoadingFallback = () => (
 );
 
 const ProductsPage = memo(function ProductsPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = tokenStorage.getToken();
+    const userType = tokenStorage.getUserType();
+    
+    if (!token || userType !== 'merchant') {
+      console.log('No valid merchant token found, redirecting to login');
+      router.replace('/login');
+      return;
+    }
+  }, [router]);
+
   console.log("=== Products Page Debug ===");
   console.log("Rendering Products Page");
 

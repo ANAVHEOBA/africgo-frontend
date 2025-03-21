@@ -33,6 +33,16 @@ export interface Address {
   recipientEmail?: string;
 }
 
+export type OrderStatus = 
+  | 'PENDING' 
+  | 'CONFIRMED' 
+  | 'READY_FOR_PICKUP'
+  | 'PICKED_UP' 
+  | 'IN_TRANSIT' 
+  | 'DELIVERED' 
+  | 'CANCELLED' 
+  | 'FAILED_DELIVERY';
+
 export interface Order {
   _id: string;
   userId: string;
@@ -40,7 +50,7 @@ export interface Order {
   pickupAddress: Address;
   deliveryAddress: Address;
   packageSize: 'SMALL' | 'MEDIUM' | 'LARGE';
-  status: 'PENDING' | 'CONFIRMED' | 'IN_TRANSIT' | 'DELIVERED';
+  status: OrderStatus;
   price: number;
   isFragile: boolean;
   isExpressDelivery: boolean;

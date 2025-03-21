@@ -12,6 +12,7 @@ export default function PaymentInstructions({ orderId }: { orderId: string }) {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [confirming, setConfirming] = useState(false);
 
   useEffect(() => {
     async function fetchOrder() {
@@ -28,17 +29,47 @@ export default function PaymentInstructions({ orderId }: { orderId: string }) {
   }, [orderId]);
 
   const handlePaymentConfirm = async () => {
+    if (!order) {
+      setError("Order not found");
+      return;
+    }
+
+    // Use order.price instead of paymentInstructions.amount
+    const totalAmount = order.price || 0;
+    console.log('Confirming payment with total amount:', totalAmount); // Debug log
+    
+    if (totalAmount <= 0) {
+      setError("Invalid order amount");
+      return;
+    }
+
+    setConfirming(true);
+    setError("");
+
     try {
-      await confirmOrderPayment(orderId);
+      await confirmOrderPayment(orderId, totalAmount);
       router.push(`/account/orders/${orderId}`);
     } catch (err) {
-      setError("Failed to confirm payment");
+      console.error('Payment confirmation error:', err);
+      setError(err instanceof Error ? err.message : "Failed to confirm payment");
+    } finally {
+      setConfirming(false);
     }
   };
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>{error}</div>;
-  if (!order) return <div>Order not found</div>;
+  if (loading) return <div className="text-center p-8">Loading...</div>;
+  if (error) return (
+    <div className="text-center p-8 text-red-500">
+      <p>{error}</p>
+      <button 
+        onClick={() => router.push('/account/orders')}
+        className="mt-4 px-4 py-2 bg-gray-800 text-white rounded"
+      >
+        Back to Orders
+      </button>
+    </div>
+  );
+  if (!order) return <div className="text-center p-8">Order not found</div>;
 
   return (
     <motion.div
@@ -48,7 +79,11 @@ export default function PaymentInstructions({ orderId }: { orderId: string }) {
     >
       <h2 className="text-3xl font-bold text-gold-primary mb-8">Payment Instructions</h2>
       
-      <PaymentTimer expiryTime={30 * 60} onExpire={() => router.push('/account/orders')} />
+      <PaymentTimer 
+        expiryTime={30 * 60} 
+        onExpire={() => router.push('/account/orders')}
+        orderId={orderId}
+      />
 
       <div className="space-y-6 mt-8">
         <div className="bg-gray-800 p-6 rounded-lg">
@@ -64,7 +99,22 @@ export default function PaymentInstructions({ orderId }: { orderId: string }) {
               <span className="font-bold">Account Number:</span> {order.paymentInstructions?.bankDetails.accountNumber}
             </p>
             <p className="text-white">
-              <span className="font-bold">Amount:</span> ₦{order.paymentInstructions?.amount.toLocaleString()}
+              <span className="font-bold">Amount to Pay:</span> ₦{order.price.toLocaleString()}
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-gray-800 p-6 rounded-lg">
+          <h3 className="text-xl font-bold text-white mb-4">Payment Breakdown</h3>
+          <div className="space-y-3">
+            <p className="text-white">
+              <span className="font-bold">Subtotal:</span> ₦{order.paymentInstructions?.subtotal.toLocaleString()}
+            </p>
+            <p className="text-white">
+              <span className="font-bold">Delivery Fee:</span> ₦{order.paymentInstructions?.deliveryFee.toLocaleString()}
+            </p>
+            <p className="text-white text-lg font-bold">
+              <span className="font-bold">Total Amount:</span> ₦{order.price.toLocaleString()}
             </p>
           </div>
         </div>
@@ -76,11 +126,19 @@ export default function PaymentInstructions({ orderId }: { orderId: string }) {
 
         <button
           onClick={handlePaymentConfirm}
-          className="w-full px-8 py-4 bg-gold-primary hover:bg-gold-secondary text-gray-900 
-            rounded-lg text-xl font-bold transition-colors"
+          disabled={confirming}
+          className={`w-full px-8 py-4 ${
+            confirming 
+              ? "bg-gray-600 cursor-not-allowed" 
+              : "bg-gold-primary hover:bg-gold-secondary"
+          } text-gray-900 rounded-lg text-xl font-bold transition-colors`}
         >
-          I Have Made the Payment
+          {confirming ? "Confirming Payment..." : "I Have Made the Payment"}
         </button>
+
+        {error && (
+          <p className="text-red-500 text-center mt-4">{error}</p>
+        )}
       </div>
     </motion.div>
   );

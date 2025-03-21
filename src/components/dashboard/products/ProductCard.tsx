@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Product, ProductStatus } from "@/lib/products/types";
 import { deleteProduct, updateProduct } from "@/lib/products/api";
+import { tokenStorage } from '@/lib/auth/tokenStorage';
 
 interface ProductCardProps {
   product: Product;
@@ -20,6 +21,14 @@ export default function ProductCard({ product, onDelete }: ProductCardProps) {
   const [imageError, setImageError] = useState(false);
   const [isImageLoading, setIsImageLoading] = useState(true);
   const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const token = tokenStorage.getToken();
+    if (!token) {
+      router.replace('/login');
+      return;
+    }
+  }, [router]);
 
   // Use intersection observer to detect when card is visible
   useEffect(() => {
@@ -84,6 +93,11 @@ export default function ProductCard({ product, onDelete }: ProductCardProps) {
       await deleteProduct(product._id);
       onDelete();
     } catch (error) {
+      if (error instanceof Error && error.message === 'Authentication required') {
+        tokenStorage.clearToken();
+        router.replace('/login');
+        return;
+      }
       console.error("Failed to delete product:", error);
       alert("Failed to delete product");
     } finally {
@@ -99,6 +113,11 @@ export default function ProductCard({ product, onDelete }: ProductCardProps) {
       });
       onDelete(); // Refresh the list
     } catch (error) {
+      if (error instanceof Error && error.message === 'Authentication required') {
+        tokenStorage.clearToken();
+        router.replace('/login');
+        return;
+      }
       console.error("Failed to update product:", error);
       alert("Failed to update product status");
     } finally {

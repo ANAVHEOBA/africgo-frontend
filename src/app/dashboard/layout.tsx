@@ -4,6 +4,7 @@ import { useEffect, useState, memo } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Sidebar from "@/components/dashboard/layout/Sidebar";
 import TopNav from "@/components/dashboard/layout/TopNav";
+import { tokenStorage } from '@/lib/auth/tokenStorage';
 
 const DashboardLayout = memo(function DashboardLayout({
   children,
@@ -15,15 +16,17 @@ const DashboardLayout = memo(function DashboardLayout({
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    // Check both token and userType
+    const token = tokenStorage.getToken();
+    const userType = tokenStorage.getUserType();
 
-    if (!token) {
+    if (!token || userType !== 'merchant') {
       router.replace("/login");
       return;
     }
 
     setIsLoading(false);
-  }, [router]); // Remove pathname dependency
+  }, [router]);
 
   if (isLoading) {
     return (

@@ -1,51 +1,49 @@
 import { Order, CreateOrderData } from "./types";
+import { tokenStorage } from '@/lib/auth/tokenStorage';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://logistics-backend-1-s91j.onrender.com";
 
-// Helper to safely access localStorage (only in browser)
-const getToken = () => {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem("token");
+// Helper function to get auth headers
+function getAuthHeaders() {
+  const token = tokenStorage.getToken()
+  
+  if (!token) {
+    throw new Error('Authentication required')
   }
-  return null;
-};
+  
+  // Log the headers being sent
+  const headers = {
+    'Authorization': `Bearer ${token.trim()}`,
+    'Content-Type': 'application/json'
+  }
+  console.log('Request headers:', headers)
+  return headers
+}
+
+// Helper to handle API responses
+async function handleResponse<T>(response: Response): Promise<T> {
+  const data = await response.json()
+  
+  if (!response.ok) {
+    if (response.status === 401) {
+      tokenStorage.clearToken()
+      throw new Error('Authentication required')
+    }
+    throw new Error(data.message || 'API request failed')
+  }
+  
+  return data.data as T
+}
 
 export async function placeOrder(orderData: CreateOrderData): Promise<Order> {
-  const token = getToken();
-  
-  if (!orderData.storeId) {
-    throw new Error("Store ID is required");
-  }
-  
-  console.log('API URL:', API_URL);
-  console.log('Sending order to API:', JSON.stringify(orderData, null, 2));
-  console.log('Authorization token exists:', !!token);
-  
   try {
     const response = await fetch(`${API_URL}/api/orders/consumer/place-order`, {
       method: "POST",
-      headers: {
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        "Content-Type": "application/json",
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(orderData),
     });
     
-    console.log('API response status:', response.status);
-    
-    const data = await response.json();
-    console.log('API response data:', JSON.stringify(data, null, 2));
-    
-    if (!data.success) {
-      const errorMessage = data.message || "Failed to place order";
-      console.error('API error details:', {
-        message: data.message,
-        errors: data.errors,
-        data: data.data
-      });
-      throw new Error(errorMessage);
-    }
-    return data.data;
+    return handleResponse<Order>(response);
   } catch (error) {
     console.error('API call error:', error);
     throw error;
@@ -53,43 +51,65 @@ export async function placeOrder(orderData: CreateOrderData): Promise<Order> {
 }
 
 export async function getOrders(): Promise<Order[]> {
-  const token = getToken();
-  const response = await fetch(`${API_URL}/api/orders/consumer/orders`, {
-    headers: {
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    cache: 'no-store'
-  });
+  try {
+    console.log('Fetching orders from:', `${API_URL}/api/orders/consumer/orders`)
+    
+    const headers = getAuthHeaders()
+    const response = await fetch(`${API_URL}/api/orders/consumer/orders`, {
+      headers,
+      cache: 'no-store'
+    });
 
-  const data = await response.json();
-  if (!data.success) {
-    throw new Error(data.message || "Failed to fetch orders");
+    console.log('Orders response status:', response.status)
+    const data = await response.json()
+    console.log('Orders response data:', data)
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to fetch orders')
+    }
+
+    // The API returns { data: { orders: [...] } }
+    if (data.data && Array.isArray(data.data.orders)) {
+      console.log('Parsed orders:', data.data.orders)
+      return data.data.orders
+    }
+
+    console.warn('Unexpected response format:', data)
+    return []
+  } catch (error) {
+    console.error('Error fetching orders:', error)
+    throw error
   }
-  return data.data.orders;
 }
 
 export async function getOrderById(orderId: string): Promise<Order> {
-  const token = getToken();
+  const token = tokenStorage.getToken();
+  
+  if (!token) {
+    throw new Error("Authentication required");
+  }
   
   if (!orderId) {
     throw new Error("Order ID is required");
   }
   
-  const response = await fetch(
-    `${API_URL}/api/orders/consumer/orders/${orderId}`,
-    {
-      headers: {
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      cache: 'no-store'
-    }
-  );
+  try {
+    const response = await fetch(
+      `${API_URL}/api/orders/consumer/orders/${orderId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        cache: 'no-store'
+      }
+    );
 
-  const data = await response.json();
-  if (!data.success) {
-    throw new Error(data.message || "Failed to fetch order");
+    return handleResponse<Order>(response);
+  } catch (error) {
+    console.error("Error fetching order:", error);
+    throw error;
   }
-  return data.data;
 }
 
 export async function trackOrder(trackingNumber: string): Promise<Order> {
@@ -115,10 +135,17 @@ export async function trackOrder(trackingNumber: string): Promise<Order> {
   }
 }
 
-export async function confirmOrderPayment(orderId: string): Promise<Order> {
-  const token = getToken();
+export async function confirmOrderPayment(orderId: string, amount: number): Promise<Order> {
+  const token = tokenStorage.getToken();
+  
+  if (!amount || amount <= 0) {
+    console.error('Invalid payment amount:', amount);
+    throw new Error("Valid payment amount is required");
+  }
   
   try {
+    console.log('Confirming payment:', { orderId, amount });
+    
     const response = await fetch(
       `${API_URL}/api/orders/consumer/mark-payment/${orderId}`,
       {
@@ -127,14 +154,26 @@ export async function confirmOrderPayment(orderId: string): Promise<Order> {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
           "Content-Type": "application/json",
         },
+        body: JSON.stringify({
+          paymentMethod: "BANK_TRANSFER",
+          amount: amount
+        }),
       }
     );
 
     const data = await response.json();
+    console.log('Payment confirmation response:', data);
+
     if (!data.success) {
       throw new Error(data.message || "Failed to confirm payment");
     }
-    return data.data;
+    
+    if (!data.data.order) {
+      console.error('Invalid response format:', data);
+      throw new Error("Invalid response from server");
+    }
+    
+    return data.data.order;
   } catch (error) {
     console.error('Payment confirmation error:', error);
     throw error;

@@ -4,17 +4,20 @@ import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import AccountNav from "./AccountNav"
 import AccountHeader from "./AccountHeader"
+import { tokenStorage } from '@/lib/auth/tokenStorage'
 
 export default function AccountLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
 
   // Check if user is logged in and is a consumer
   useEffect(() => {
-    const token = localStorage.getItem("token")
-    const userType = localStorage.getItem("userType")
+    const token = tokenStorage.getToken()
+    const userType = tokenStorage.getUserType()
 
     if (!token || userType !== "consumer") {
+      console.log('Invalid consumer access:', { token: !!token, userType })
       router.replace("/login")
+      return
     }
   }, [router])
 

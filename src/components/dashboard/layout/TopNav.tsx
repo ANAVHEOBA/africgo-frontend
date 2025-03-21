@@ -3,13 +3,14 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { tokenStorage } from '@/lib/auth/tokenStorage';
 
 export default function TopNav() {
   const router = useRouter()
   const [isProfileOpen, setIsProfileOpen] = useState(false)
 
   const handleLogout = () => {
-    localStorage.removeItem('token')
+    tokenStorage.clearToken();
     router.push('/login')
   }
 
