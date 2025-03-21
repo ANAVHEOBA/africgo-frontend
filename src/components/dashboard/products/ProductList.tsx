@@ -6,7 +6,7 @@ import { getStoreProducts } from '@/lib/products/api'
 import ProductCard from './ProductCard'
 import ProductFilterComponent from './ProductFilters'
 import { useRouter } from 'next/navigation'
-import { useStableDebounce } from '@/lib/utils'
+import { useDebounce } from "@/lib/hooks";
 
 const ProductList = memo(function ProductList() {
   const router = useRouter()
@@ -20,7 +20,7 @@ const ProductList = memo(function ProductList() {
   const [totalPages, setTotalPages] = useState(0)
   const [isInitialLoad, setIsInitialLoad] = useState(true)
 
-  const debouncedFilters = useStableDebounce(filters, 500)
+  const debouncedFilters = useDebounce(filters, 500)
 
   const fetchProducts = useCallback(async () => {
     if (!isInitialLoad) setLoading(true)

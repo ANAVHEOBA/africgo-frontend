@@ -11,14 +11,23 @@ export default function PaymentInstructions({ orderId }: { orderId: string }) {
   const router = useRouter();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
+  const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
     async function fetchOrder() {
       try {
+        setLoading(true);
         const orderData = await getOrderById(orderId);
+        console.log('Fetched order data:', {
+          id: orderData._id,
+          price: orderData.price,
+          paymentInstructions: orderData.paymentInstructions
+        });
         setOrder(orderData);
+        setError("");
       } catch (err) {
+        console.error('Error fetching order:', err);
         setError("Failed to load order details");
       } finally {
         setLoading(false);
@@ -28,17 +37,62 @@ export default function PaymentInstructions({ orderId }: { orderId: string }) {
   }, [orderId]);
 
   const handlePaymentConfirm = async () => {
+    if (!order) {
+      setError("Order not found");
+      return;
+    }
+
+    // Calculate total amount from order details
+    const totalAmount = order.price || order.paymentInstructions?.amount;
+    
+    if (!totalAmount || totalAmount <= 0) {
+      console.error('Invalid payment amount:', {
+        orderPrice: order.price,
+        instructionsAmount: order.paymentInstructions?.amount
+      });
+      setError("Payment amount not found or invalid");
+      return;
+    }
+
     try {
-      await confirmOrderPayment(orderId);
+      setConfirming(true);
+      setError("");
+      
+      console.log('Confirming payment with amount:', totalAmount);
+      
+      await confirmOrderPayment(orderId, totalAmount);
       router.push(`/account/orders/${orderId}`);
     } catch (err) {
-      setError("Failed to confirm payment");
+      console.error('Error confirming payment:', err);
+      setError(err instanceof Error ? err.message : "Failed to confirm payment");
+    } finally {
+      setConfirming(false);
     }
   };
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>{error}</div>;
-  if (!order) return <div>Order not found</div>;
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[200px]">
+        <div className="text-gold-primary text-xl">Loading payment details...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+        {error}
+      </div>
+    );
+  }
+
+  if (!order) {
+    return (
+      <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
+        Order not found
+      </div>
+    );
+  }
 
   return (
     <motion.div
@@ -76,10 +130,14 @@ export default function PaymentInstructions({ orderId }: { orderId: string }) {
 
         <button
           onClick={handlePaymentConfirm}
-          className="w-full px-8 py-4 bg-gold-primary hover:bg-gold-secondary text-gray-900 
-            rounded-lg text-xl font-bold transition-colors"
+          disabled={confirming}
+          className={`w-full px-8 py-4 ${
+            confirming 
+              ? 'bg-gray-500 cursor-not-allowed' 
+              : 'bg-gold-primary hover:bg-gold-secondary'
+          } text-gray-900 rounded-lg text-xl font-bold transition-colors`}
         >
-          I Have Made the Payment
+          {confirming ? 'Confirming Payment...' : 'I Have Made the Payment'}
         </button>
       </div>
     </motion.div>

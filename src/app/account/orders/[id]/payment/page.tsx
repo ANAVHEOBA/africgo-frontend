@@ -1,5 +1,15 @@
 import PaymentInstructions from "@/components/account/orders/PaymentInstructions";
 
-export default function OrderPaymentPage({ params }: { params: { id: string } }) {
-  return <PaymentInstructions orderId={params.id} />;
+interface PageProps {
+  params: {
+    id: string;
+  };
+}
+
+export default async function OrderPaymentPage({ params }: PageProps) {
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <PaymentInstructions orderId={params.id} />
+    </div>
+  );
 } 

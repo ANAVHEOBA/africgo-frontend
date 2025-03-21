@@ -72,15 +72,8 @@ export default function OrderForm({
     setLoading(true);
     setError("");
 
-    if (!storeId) {
-      console.error('Store ID is missing:', { storeId });
-      setError("Store information not available");
-      setLoading(false);
-      return;
-    }
-
-    if (!selectedZone) {
-      setError("Please select a delivery zone");
+    if (!storeId || !selectedZone) {
+      setError("Missing required information");
       setLoading(false);
       return;
     }
@@ -112,13 +105,12 @@ export default function OrderForm({
         isExpressDelivery: formData.get("isExpressDelivery") === "true",
         specialInstructions: formData.get("specialInstructions") as string || undefined,
         zoneId: selectedZone._id,
-        paymentMethod: "BANK_TRANSFER"
+        paymentMethod: "BANK_TRANSFER",
       };
 
       console.log('Submitting order with data:', JSON.stringify(orderData, null, 2));
       const order = await placeOrder(orderData);
       
-      // Redirect to payment page instead of showing instructions
       router.push(`/account/orders/${order._id}/payment`);
     } catch (err) {
       console.error('Error placing order:', err);

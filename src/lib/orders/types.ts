@@ -33,6 +33,22 @@ export interface Address {
   recipientEmail?: string;
 }
 
+export interface PaymentInstructions {
+  bankDetails: {
+    accountName: string;
+    accountNumber: string;
+    bankName: string;
+  };
+  amount: number;
+  deliveryFee: number;
+  subtotal: number;
+  currency: string;
+  instructions: string;
+  paymentReference?: string;
+  paymentStatus?: 'PENDING' | 'CONFIRMED' | 'FAILED';
+  paymentDate?: string;
+}
+
 export interface Order {
   _id: string;
   userId: string;
@@ -53,18 +69,7 @@ export interface Order {
   estimatedDeliveryDate: string;
   createdAt: string;
   updatedAt: string;
-  paymentInstructions?: {
-    bankDetails: {
-      accountName: string;
-      accountNumber: string;
-      bankName: string;
-    };
-    amount: number;
-    deliveryFee: number;
-    subtotal: number;
-    currency: string;
-    instructions: string;
-  };
+  paymentInstructions?: PaymentInstructions;
 }
 
 export interface CreateOrderData {
@@ -95,5 +100,5 @@ export interface CreateOrderData {
   isExpressDelivery: boolean;
   specialInstructions?: string;
   zoneId: string;
-  paymentMethod: string;
+  paymentMethod: 'BANK_TRANSFER';
 }

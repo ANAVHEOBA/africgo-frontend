@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, memo } from "react";
 import type { ProductFilters } from "@/lib/products/types";
 import { ProductStatus } from "@/lib/products/types";
-import { useDebounce } from "@/lib/utils";
+import { useDebounce } from "@/lib/hooks";
 
 interface ProductFiltersProps {
   filters: ProductFilters;

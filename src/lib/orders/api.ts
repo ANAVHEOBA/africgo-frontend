@@ -115,26 +115,51 @@ export async function trackOrder(trackingNumber: string): Promise<Order> {
   }
 }
 
-export async function confirmOrderPayment(orderId: string): Promise<Order> {
+export async function confirmOrderPayment(
+  orderId: string,
+  amount: number
+): Promise<Order> {
   const token = getToken();
   
+  if (!token) {
+    throw new Error('Authentication required');
+  }
+
+  if (!amount || amount <= 0) {
+    throw new Error('Valid payment amount is required');
+  }
+  
   try {
+    console.log('Confirming payment for order:', orderId, 'amount:', amount);
+    
     const response = await fetch(
       `${API_URL}/api/orders/consumer/mark-payment/${orderId}`,
       {
         method: "POST",
         headers: {
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
+        body: JSON.stringify({
+          paymentMethod: "BANK_TRANSFER",
+          amount: amount
+        }),
       }
     );
 
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to confirm payment');
+    }
+
     const data = await response.json();
+    console.log('Payment confirmation response:', data);
+
     if (!data.success) {
       throw new Error(data.message || "Failed to confirm payment");
     }
-    return data.data;
+    
+    return data.data.order;
   } catch (error) {
     console.error('Payment confirmation error:', error);
     throw error;
