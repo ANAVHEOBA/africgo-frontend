@@ -29,7 +29,8 @@ export default function HeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
           >
-            Connect with local stores and get your items delivered quickly and securely
+            Connect with local stores and get your items delivered quickly and
+            securely
           </motion.p>
 
           {/* Features List */}
@@ -71,7 +72,7 @@ export default function HeroSection() {
             </Link>
             <Link href="/register">
               <motion.button
-                className="px-8 py-4 rounded-lg border border-gold-primary text-white 
+                className="px-8 py-4 rounded-lg border border-gold-primary text-gold-primary 
                 hover:bg-gold-primary/10 transition-all duration-300"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}

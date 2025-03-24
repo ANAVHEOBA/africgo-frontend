@@ -21,7 +21,7 @@ const ProductsPage = memo(function ProductsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center flex-col sm:flex-row">
         <h1 className="text-2xl font-bold">Products</h1>
         <Link
           href="/dashboard/products/new"

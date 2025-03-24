@@ -84,11 +84,11 @@ const ProductFilters = memo(function ProductFilters({
               focus:outline-none focus:ring-2 focus:ring-gold-primary focus:border-gold-primary
               text-light-800"
           >
-            <option value="" className="bg-gray-800">
+            <option value="" className="">
               All Status
             </option>
             {Object.values(ProductStatus).map((status) => (
-              <option key={status} value={status} className="bg-gray-800">
+              <option key={status} value={status} className="">
                 {status}
               </option>
             ))}
@@ -103,22 +103,22 @@ const ProductFilters = memo(function ProductFilters({
               focus:outline-none focus:ring-2 focus:ring-gold-primary focus:border-gold-primary
               text-light-800"
           >
-            <option value="" className="bg-gray-800">
+            <option value="" className="">
               All Categories
             </option>
-            <option value="Electronics" className="bg-gray-800">
+            <option value="Electronics" className="">
               Electronics
             </option>
-            <option value="Clothing" className="bg-gray-800">
+            <option value="Clothing" className="">
               Clothing
             </option>
-            <option value="Books" className="bg-gray-800">
+            <option value="Books" className="">
               Books
             </option>
-            <option value="Home" className="bg-gray-800">
+            <option value="Home" className="">
               Home
             </option>
-            <option value="Other" className="bg-gray-800">
+            <option value="Other" className="">
               Other
             </option>
           </select>

@@ -38,7 +38,7 @@ const DashboardLayout = memo(function DashboardLayout({
       <Sidebar currentPath={pathname} />
       <div className="flex-1">
         <TopNav />
-        <main className="p-8 bg-gray-50">{children}</main>
+        <main className="p-4 sm:p-8 bg-gray-50">{children}</main>
       </div>
     </div>
   );

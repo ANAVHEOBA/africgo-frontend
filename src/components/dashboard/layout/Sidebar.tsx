@@ -1,103 +1,111 @@
-"use client"
+"use client";
 
-import { memo, useEffect, useState } from 'react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { memo, useEffect, useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const navigationItems = [
   {
-    name: 'Dashboard',
-    href: '/dashboard',
+    name: "Dashboard",
+    href: "/dashboard",
     icon: DashboardIcon,
   },
   {
-    name: 'Products',
-    href: '/dashboard/products',
+    name: "Products",
+    href: "/dashboard/products",
     icon: ProductIcon,
   },
   {
-    name: 'Orders',
-    href: '/dashboard/orders',
+    name: "Orders",
+    href: "/dashboard/orders",
     icon: OrderIcon,
   },
   {
-    name: 'Customers',
-    href: '/dashboard/customers',
+    name: "Customers",
+    href: "/dashboard/customers",
     icon: CustomerIcon,
   },
   {
-    name: 'Analytics',
-    href: '/dashboard/analytics',
+    name: "Analytics",
+    href: "/dashboard/analytics",
     icon: AnalyticsIcon,
   },
   {
-    name: 'Settings',
-    href: '/dashboard/settings',
+    name: "Settings",
+    href: "/dashboard/settings",
     icon: SettingsIcon,
   },
-] as const
+] as const;
 
 const Sidebar = memo(function Sidebar() {
-  const pathname = usePathname()
-  const [storeExists, setStoreExists] = useState(true)
+  const pathname = usePathname();
+  const [storeExists, setStoreExists] = useState(true);
 
   useEffect(() => {
     // Check if store exists
     const checkStore = async () => {
       try {
-        const token = localStorage.getItem('token')
-        if (!token) return
+        const token = localStorage.getItem("token");
+        if (!token) return;
 
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/stores/my-store`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        })
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/stores/my-store`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
-        const data = await response.json()
-        setStoreExists(response.ok && data.success)
+        const data = await response.json();
+        setStoreExists(response.ok && data.success);
       } catch (error) {
-        console.error('Error checking store:', error)
-        setStoreExists(false)
+        console.error("Error checking store:", error);
+        setStoreExists(false);
       }
-    }
+    };
 
-    checkStore()
-  }, [])
+    checkStore();
+  }, []);
 
   // Filter out certain navigation items if store doesn't exist
-  const availableItems = navigationItems.filter(item => {
+  const availableItems = navigationItems.filter((item) => {
     if (!storeExists) {
-      return item.href === '/dashboard' // Only show dashboard when no store exists
+      return item.href === "/dashboard"; // Only show dashboard when no store exists
     }
-    return true
-  })
+    return true;
+  });
 
   return (
     <aside className="w-64 min-h-screen bg-white border-r border-gray-200">
       <nav className="p-4 space-y-2">
         {availableItems.map((item) => {
-          const isActive = pathname === item.href
-          
+          const isActive = pathname === item.href;
+
           return (
             <Link
               key={item.href}
               href={item.href}
               className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors
-                ${isActive 
-                  ? 'bg-gold-primary/10 text-gold-primary' 
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                ${
+                  isActive
+                    ? "bg-gold-primary/10 text-gold-primary"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                 }`}
             >
-              <item.icon className={`w-5 h-5 ${isActive ? 'text-gold-primary' : 'text-current'}`} />
+              <item.icon
+                className={`w-5 h-5 ${
+                  isActive ? "text-gold-primary" : "text-current"
+                }`}
+              />
               <span className="font-medium">{item.name}</span>
             </Link>
-          )
+          );
         })}
       </nav>
     </aside>
-  )
-})
+  );
+});
 
 // Icon Components
 function DashboardIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -116,7 +124,7 @@ function DashboardIcon(props: React.SVGProps<SVGSVGElement>) {
       <rect x="14" y="14" width="7" height="7" />
       <rect x="3" y="14" width="7" height="7" />
     </svg>
-  )
+  );
 }
 
 function ProductIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -134,7 +142,7 @@ function ProductIcon(props: React.SVGProps<SVGSVGElement>) {
       <path d="M3.27 6.96L12 12.01l8.73-5.05" />
       <path d="M12 22.08V12" />
     </svg>
-  )
+  );
 }
 
 function OrderIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -152,7 +160,7 @@ function OrderIcon(props: React.SVGProps<SVGSVGElement>) {
       <path d="M1 3H23V8H1V3Z" />
       <path d="M10 12H14" />
     </svg>
-  )
+  );
 }
 
 function CustomerIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -169,7 +177,7 @@ function CustomerIcon(props: React.SVGProps<SVGSVGElement>) {
       <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
       <circle cx="12" cy="7" r="4" />
     </svg>
-  )
+  );
 }
 
 function AnalyticsIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -187,7 +195,7 @@ function AnalyticsIcon(props: React.SVGProps<SVGSVGElement>) {
       <path d="M12 20V4" />
       <path d="M6 20v-6" />
     </svg>
-  )
+  );
 }
 
 function SettingsIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -204,7 +212,151 @@ function SettingsIcon(props: React.SVGProps<SVGSVGElement>) {
       <circle cx="12" cy="12" r="3" />
       <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" />
     </svg>
-  )
+  );
 }
 
-export default Sidebar 
+export default Sidebar;
+
+// "use client";
+
+// import { memo, useEffect, useState } from "react";
+// import Link from "next/link";
+// import { usePathname } from "next/navigation";
+
+// const navigationItems = [
+//   {
+//     name: "Dashboard",
+//     href: "/dashboard",
+//     icon: DashboardIcon,
+//   },
+//   {
+//     name: "Products",
+//     href: "/dashboard/products",
+//     icon: ProductIcon,
+//   },
+//   {
+//     name: "Orders",
+//     href: "/dashboard/orders",
+//     icon: OrderIcon,
+//   },
+//   {
+//     name: "Customers",
+//     href: "/dashboard/customers",
+//     icon: CustomerIcon,
+//   },
+//   {
+//     name: "Analytics",
+//     href: "/dashboard/analytics",
+//     icon: AnalyticsIcon,
+//   },
+//   {
+//     name: "Settings",
+//     href: "/dashboard/settings",
+//     icon: SettingsIcon,
+//   },
+// ] as const;
+
+// const Sidebar = memo(function Sidebar() {
+//   const pathname = usePathname();
+//   const [storeExists, setStoreExists] = useState(true);
+//   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+//   useEffect(() => {
+//     const checkStore = async () => {
+//       try {
+//         const token = localStorage.getItem("token");
+//         if (!token) return;
+
+//         const response = await fetch(
+//           `${process.env.NEXT_PUBLIC_API_URL}/api/stores/my-store`,
+//           {
+//             headers: {
+//               Authorization: `Bearer ${token}`,
+//             },
+//           }
+//         );
+
+//         const data = await response.json();
+//         setStoreExists(response.ok && data.success);
+//       } catch (error) {
+//         console.error("Error checking store:", error);
+//         setStoreExists(false);
+//       }
+//     };
+
+//     checkStore();
+//   }, []);
+
+//   const availableItems = navigationItems.filter((item) => {
+//     if (!storeExists) {
+//       return item.href === "/dashboard";
+//     }
+//     return true;
+//   });
+
+//   return (
+//     <div>
+//       <button
+//         className="p-2 m-2 bg-gray-200 rounded-md"
+//         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+//       >
+//         Menu
+//       </button>
+//       <aside
+//         className={`w-64 min-h-screen bg-white border-r border-gray-200 transition-transform ${
+//           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+//         } md:translate-x-0`}
+//       >
+//         <nav className="p-4 space-y-2">
+//           {availableItems.map((item) => {
+//             const isActive = pathname === item.href;
+
+//             return (
+//               <Link
+//                 key={item.href}
+//                 href={item.href}
+//                 className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors
+//                   ${
+//                     isActive
+//                       ? "bg-gold-primary/10 text-gold-primary"
+//                       : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+//                   }`}
+//               >
+//                 <item.icon
+//                   className={`w-5 h-5 ${
+//                     isActive ? "text-gold-primary" : "text-current"
+//                   }`}
+//                 />
+//                 <span className="font-medium">{item.name}</span>
+//               </Link>
+//             );
+//           })}
+//         </nav>
+//       </aside>
+//     </div>
+//   );
+// });
+
+// // Icon Components
+// function DashboardIcon(props: React.SVGProps<SVGSVGElement>) {
+//   return (
+//     <svg
+//       {...props}
+//       viewBox="0 0 24 24"
+//       fill="none"
+//       stroke="currentColor"
+//       strokeWidth="2"
+//       strokeLinecap="round"
+//       strokeLinejoin="round"
+//     >
+//       <rect x="3" y="3" width="7" height="7" />
+//       <rect x="14" y="3" width="7" height="7" />
+//       <rect x="14" y="14" width="7" height="7" />
+//       <rect x="3" y="14" width="7" height="7" />
+//     </svg>
+//   );
+// }
+
+// // Other icons remain unchanged...
+
+// export default Sidebar;
