@@ -1,0 +1,4 @@
+a@a:~/logistics-backend$ curl -X GET \
+  http://localhost:5000/api/stores/customers \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2N2I1YjVhZjdkYmIzZGI3ZTQ1N2Q3ZDgiLCJlbWFpbCI6Implc3NpY2FhbmF2aGVvYmFAZ21haWwuY29tIiwiaWF0IjoxNzQyODI0MzM3LCJleHAiOjE3NDI5MTA3Mzd9.ECSND8RJglk7kOcKUKQcp5M6qomxYWRWpo1GUB1t49I"
+{"success":true,"data":{"customers":[{"totalOrders":25,"totalSpent":31894.65,"lastOrderDate":"2025-03-21T02:28:13.422Z","consumerId":"67bdba50fcb27218d15deab7","name":"Updated Name Anavheoba","email":"anavheobawisdom@gmail.com"},{"totalOrders":4,"totalSpent":499.90000000000003,"lastOrderDate":"2025-02-25T15:39:52.777Z","consumerId":null,"name":null}],"pagination":{"total":2,"page":1,"limit":10,"totalPages":1}}}a@a:~/logistics-backend$ 

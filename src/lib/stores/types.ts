@@ -238,4 +238,23 @@ export interface StoreDashboardData {
     totalSold: number;
     revenue: number;
   }>;
+}
+
+export interface StoreCustomer {
+  totalOrders: number;
+  totalSpent: number;
+  lastOrderDate: string;
+  consumerId: string | null;
+  name: string | null;
+  email: string | null;
+}
+
+export interface PaginatedStoreCustomers {
+  customers: StoreCustomer[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
 } 
