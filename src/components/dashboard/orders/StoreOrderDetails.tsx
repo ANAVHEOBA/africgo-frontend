@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { getStoreOrderById, markOrderAsReady } from "@/lib/stores/api";
 import { StoreOrder } from "@/lib/stores/types";
 import { getStatusStyle } from '@/lib/utils/orderUtils';
+import { toast } from "react-hot-toast";
 
 interface StoreOrderDetailsProps {
   orderId: string;
@@ -44,9 +45,11 @@ export default function StoreOrderDetails({ orderId }: StoreOrderDetailsProps) {
       setIsMarkingReady(true);
       const updatedOrder = await markOrderAsReady(orderId);
       setOrder(updatedOrder);
+      toast.success('Order marked as ready for pickup');
     } catch (error) {
       console.error('Error marking order as ready:', error);
       setError(error instanceof Error ? error.message : "Failed to mark order as ready");
+      toast.error('Failed to mark order as ready');
     } finally {
       setIsMarkingReady(false);
     }

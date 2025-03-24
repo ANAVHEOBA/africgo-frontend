@@ -215,8 +215,7 @@ export async function markOrderAsReady(orderId: string): Promise<StoreOrder> {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
-        },
-        cache: 'no-store'
+        }
       }
     );
 
