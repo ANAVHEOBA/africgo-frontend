@@ -257,4 +257,59 @@ export interface PaginatedStoreCustomers {
     limit: number;
     totalPages: number;
   };
+}
+
+export interface StoreAddress {
+  _id: string;
+  userId: string;
+  street: string;
+  city: string;
+  state: string;
+  country: string;
+  postalCode: string;
+  isDefault: boolean;
+  label: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateStoreAddressData {
+  street: string;
+  city: string;
+  state: string;
+  country: string;
+  postalCode: string;
+  isDefault: boolean;
+}
+
+export interface UpdateStoreAddressData extends CreateStoreAddressData {
+  addressId: string;
+}
+
+export interface Address {
+  _id: string;
+  userId: string;
+  street: string;
+  city: string;
+  state: string;
+  country: string;
+  postalCode: string;
+  isDefault: boolean;
+  label: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateAddressData {
+  street: string;
+  city: string;
+  state: string;
+  country: string;
+  postalCode: string;
+  isDefault: boolean;
+  label: string;
+}
+
+export interface UpdateAddressData extends Partial<CreateAddressData> {
+  addressId: string;
 } 

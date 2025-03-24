@@ -3,6 +3,7 @@
 import { memo, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { fetchWithRetry } from '@/lib/stores/api'
 
 const navigationItems = [
   {
@@ -42,17 +43,25 @@ const Sidebar = memo(function Sidebar() {
   const [storeExists, setStoreExists] = useState(true)
 
   useEffect(() => {
-    // Check if store exists
     const checkStore = async () => {
       try {
         const token = localStorage.getItem('token')
         if (!token) return
 
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/stores/my-store`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        })
+        const response = await fetchWithRetry(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/stores/my-store`,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+          }
+        )
+
+        if (!response) {
+          setStoreExists(false)
+          return
+        }
 
         const data = await response.json()
         setStoreExists(response.ok && data.success)
