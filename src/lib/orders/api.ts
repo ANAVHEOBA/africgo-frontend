@@ -110,21 +110,38 @@ export async function getOrderById(orderId: string): Promise<Order> {
     throw new Error("Order ID is required");
   }
   
-  const response = await fetch(
-    `${API_URL}/api/orders/consumer/orders/${orderId}`,
-    {
-      headers: {
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      cache: 'no-store'
-    }
-  );
+  console.log('Fetching order details with token:', !!token);
+  console.log('Order ID:', orderId);
+  
+  try {
+    const response = await fetch(
+      `${API_URL}/api/orders/consumer/orders/${orderId}`,
+      {
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        cache: 'no-store'
+      }
+    );
 
-  const data = await response.json();
-  if (!data.success) {
-    throw new Error(data.message || "Failed to fetch order");
+    console.log('Response status:', response.status);
+    const data = await response.json();
+    console.log('Response data:', JSON.stringify(data, null, 2));
+
+    if (!data.success) {
+      throw new Error(data.message || "Failed to fetch order");
+    }
+
+    // Add validation for payment instructions
+    if (!data.data.paymentInstructions) {
+      console.warn('Order found but no payment instructions:', data.data);
+    }
+
+    return data.data;
+  } catch (error) {
+    console.error('Error in getOrderById:', error);
+    throw error;
   }
-  return data.data;
 }
 
 export async function trackOrder(trackingNumber: string): Promise<Order> {

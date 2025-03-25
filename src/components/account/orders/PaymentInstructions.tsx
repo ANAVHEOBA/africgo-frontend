@@ -18,17 +18,19 @@ export default function PaymentInstructions({ orderId }: { orderId: string }) {
     async function fetchOrder() {
       try {
         setLoading(true);
+        console.log('Fetching order with ID:', orderId);
         const orderData = await getOrderById(orderId);
-        console.log('Fetched order data:', {
-          id: orderData._id,
-          price: orderData.price,
-          paymentInstructions: orderData.paymentInstructions
-        });
+        console.log('Full order data:', JSON.stringify(orderData, null, 2));
+        
+        if (!orderData.paymentInstructions) {
+          console.error('Payment instructions missing from order:', orderData);
+          setError("Order found but payment instructions are missing");
+        }
+        
         setOrder(orderData);
-        setError("");
       } catch (err) {
         console.error('Error fetching order:', err);
-        setError("Failed to load order details");
+        setError(err instanceof Error ? err.message : "Failed to load order details");
       } finally {
         setLoading(false);
       }
@@ -36,31 +38,23 @@ export default function PaymentInstructions({ orderId }: { orderId: string }) {
     fetchOrder();
   }, [orderId]);
 
-  const handlePaymentConfirm = async () => {
-    if (!order) {
-      setError("Order not found");
-      return;
+  useEffect(() => {
+    if (order) {
+      console.log('Order state updated:', order);
+      console.log('Payment Instructions:', order.paymentInstructions);
     }
+  }, [order]);
 
-    // Calculate total amount from order details
-    const totalAmount = order.price || order.paymentInstructions?.amount;
-    
-    if (!totalAmount || totalAmount <= 0) {
-      console.error('Invalid payment amount:', {
-        orderPrice: order.price,
-        instructionsAmount: order.paymentInstructions?.amount
-      });
-      setError("Payment amount not found or invalid");
+  const handlePaymentConfirm = async () => {
+    if (!order?.paymentInstructions) {
+      setError("Payment details not found");
       return;
     }
 
     try {
       setConfirming(true);
       setError("");
-      
-      console.log('Confirming payment with amount:', totalAmount);
-      
-      await confirmOrderPayment(orderId, totalAmount);
+      await confirmOrderPayment(orderId, order.paymentInstructions.amount);
       router.push(`/account/orders/${orderId}`);
     } catch (err) {
       console.error('Error confirming payment:', err);
@@ -81,18 +75,32 @@ export default function PaymentInstructions({ orderId }: { orderId: string }) {
   if (error) {
     return (
       <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-        {error}
+        <p>{error}</p>
+        <p className="text-sm mt-2">Order ID: {orderId}</p>
       </div>
     );
   }
 
-  if (!order) {
+  if (!order?.paymentInstructions) {
     return (
       <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
-        Order not found
+        <p>Payment instructions not found</p>
+        <p className="text-sm mt-2">Order ID: {orderId}</p>
+        <p className="text-sm mt-1">Order Status: {order?.status}</p>
+        <p className="text-sm mt-1">Order Data Available: {order ? 'Yes' : 'No'}</p>
+        {order && (
+          <details className="mt-2">
+            <summary className="cursor-pointer">Debug Info</summary>
+            <pre className="mt-2 text-xs whitespace-pre-wrap">
+              {JSON.stringify(order, null, 2)}
+            </pre>
+          </details>
+        )}
       </div>
     );
   }
+
+  const { bankDetails, amount, deliveryFee, subtotal, currency, instructions } = order.paymentInstructions;
 
   return (
     <motion.div
@@ -105,29 +113,49 @@ export default function PaymentInstructions({ orderId }: { orderId: string }) {
       <PaymentTimer expiryTime={30 * 60} onExpire={() => router.push('/account/orders')} />
 
       <div className="space-y-6 mt-8">
+        {/* Bank Details */}
         <div className="bg-gray-800 p-6 rounded-lg">
           <h3 className="text-xl font-bold text-white mb-4">Bank Transfer Details</h3>
           <div className="space-y-3">
             <p className="text-white">
-              <span className="font-bold">Bank:</span> {order.paymentInstructions?.bankDetails.bankName}
+              <span className="font-bold">Bank:</span> {bankDetails.bankName}
             </p>
             <p className="text-white">
-              <span className="font-bold">Account Name:</span> {order.paymentInstructions?.bankDetails.accountName}
+              <span className="font-bold">Account Name:</span> {bankDetails.accountName}
             </p>
             <p className="text-white">
-              <span className="font-bold">Account Number:</span> {order.paymentInstructions?.bankDetails.accountNumber}
-            </p>
-            <p className="text-white">
-              <span className="font-bold">Amount:</span> ₦{order.paymentInstructions?.amount.toLocaleString()}
+              <span className="font-bold">Account Number:</span> {bankDetails.accountNumber}
             </p>
           </div>
         </div>
 
+        {/* Payment Breakdown */}
         <div className="bg-gray-800 p-6 rounded-lg">
-          <h3 className="text-xl font-bold text-white mb-4">Important Instructions</h3>
-          <p className="text-white">{order.paymentInstructions?.instructions}</p>
+          <h3 className="text-xl font-bold text-white mb-4">Payment Details</h3>
+          <div className="space-y-3">
+            <p className="text-white flex justify-between">
+              <span>Subtotal:</span>
+              <span>{currency} {subtotal.toLocaleString()}</span>
+            </p>
+            <p className="text-white flex justify-between">
+              <span>Delivery Fee:</span>
+              <span>{currency} {deliveryFee.toLocaleString()}</span>
+            </p>
+            <div className="border-t border-gray-600 my-3"></div>
+            <p className="text-white flex justify-between text-lg font-bold">
+              <span>Total Amount:</span>
+              <span>{currency} {amount.toLocaleString()}</span>
+            </p>
+          </div>
         </div>
 
+        {/* Instructions */}
+        <div className="bg-gray-800 p-6 rounded-lg">
+          <h3 className="text-xl font-bold text-white mb-4">Important Instructions</h3>
+          <p className="text-white">{instructions}</p>
+        </div>
+
+        {/* Confirm Payment Button */}
         <button
           onClick={handlePaymentConfirm}
           disabled={confirming}
@@ -142,4 +170,4 @@ export default function PaymentInstructions({ orderId }: { orderId: string }) {
       </div>
     </motion.div>
   );
-} 
+}
