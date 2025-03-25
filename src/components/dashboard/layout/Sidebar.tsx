@@ -3,6 +3,7 @@
 import { memo, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { fetchWithRetry } from "@/lib/stores/api";
 
 const navigationItems = [
   {
@@ -42,20 +43,25 @@ const Sidebar = memo(function Sidebar() {
   const [storeExists, setStoreExists] = useState(true);
 
   useEffect(() => {
-    // Check if store exists
     const checkStore = async () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) return;
 
-        const response = await fetch(
+        const response = await fetchWithRetry(
           `${process.env.NEXT_PUBLIC_API_URL}/api/stores/my-store`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
             },
           }
         );
+
+        if (!response) {
+          setStoreExists(false);
+          return;
+        }
 
         const data = await response.json();
         setStoreExists(response.ok && data.success);
@@ -216,147 +222,3 @@ function SettingsIcon(props: React.SVGProps<SVGSVGElement>) {
 }
 
 export default Sidebar;
-
-// "use client";
-
-// import { memo, useEffect, useState } from "react";
-// import Link from "next/link";
-// import { usePathname } from "next/navigation";
-
-// const navigationItems = [
-//   {
-//     name: "Dashboard",
-//     href: "/dashboard",
-//     icon: DashboardIcon,
-//   },
-//   {
-//     name: "Products",
-//     href: "/dashboard/products",
-//     icon: ProductIcon,
-//   },
-//   {
-//     name: "Orders",
-//     href: "/dashboard/orders",
-//     icon: OrderIcon,
-//   },
-//   {
-//     name: "Customers",
-//     href: "/dashboard/customers",
-//     icon: CustomerIcon,
-//   },
-//   {
-//     name: "Analytics",
-//     href: "/dashboard/analytics",
-//     icon: AnalyticsIcon,
-//   },
-//   {
-//     name: "Settings",
-//     href: "/dashboard/settings",
-//     icon: SettingsIcon,
-//   },
-// ] as const;
-
-// const Sidebar = memo(function Sidebar() {
-//   const pathname = usePathname();
-//   const [storeExists, setStoreExists] = useState(true);
-//   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-
-//   useEffect(() => {
-//     const checkStore = async () => {
-//       try {
-//         const token = localStorage.getItem("token");
-//         if (!token) return;
-
-//         const response = await fetch(
-//           `${process.env.NEXT_PUBLIC_API_URL}/api/stores/my-store`,
-//           {
-//             headers: {
-//               Authorization: `Bearer ${token}`,
-//             },
-//           }
-//         );
-
-//         const data = await response.json();
-//         setStoreExists(response.ok && data.success);
-//       } catch (error) {
-//         console.error("Error checking store:", error);
-//         setStoreExists(false);
-//       }
-//     };
-
-//     checkStore();
-//   }, []);
-
-//   const availableItems = navigationItems.filter((item) => {
-//     if (!storeExists) {
-//       return item.href === "/dashboard";
-//     }
-//     return true;
-//   });
-
-//   return (
-//     <div>
-//       <button
-//         className="p-2 m-2 bg-gray-200 rounded-md"
-//         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-//       >
-//         Menu
-//       </button>
-//       <aside
-//         className={`w-64 min-h-screen bg-white border-r border-gray-200 transition-transform ${
-//           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-//         } md:translate-x-0`}
-//       >
-//         <nav className="p-4 space-y-2">
-//           {availableItems.map((item) => {
-//             const isActive = pathname === item.href;
-
-//             return (
-//               <Link
-//                 key={item.href}
-//                 href={item.href}
-//                 className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors
-//                   ${
-//                     isActive
-//                       ? "bg-gold-primary/10 text-gold-primary"
-//                       : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-//                   }`}
-//               >
-//                 <item.icon
-//                   className={`w-5 h-5 ${
-//                     isActive ? "text-gold-primary" : "text-current"
-//                   }`}
-//                 />
-//                 <span className="font-medium">{item.name}</span>
-//               </Link>
-//             );
-//           })}
-//         </nav>
-//       </aside>
-//     </div>
-//   );
-// });
-
-// // Icon Components
-// function DashboardIcon(props: React.SVGProps<SVGSVGElement>) {
-//   return (
-//     <svg
-//       {...props}
-//       viewBox="0 0 24 24"
-//       fill="none"
-//       stroke="currentColor"
-//       strokeWidth="2"
-//       strokeLinecap="round"
-//       strokeLinejoin="round"
-//     >
-//       <rect x="3" y="3" width="7" height="7" />
-//       <rect x="14" y="3" width="7" height="7" />
-//       <rect x="14" y="14" width="7" height="7" />
-//       <rect x="3" y="14" width="7" height="7" />
-//     </svg>
-//   );
-// }
-
-// // Other icons remain unchanged...
-
-// export default Sidebar;

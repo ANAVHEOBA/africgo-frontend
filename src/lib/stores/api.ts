@@ -1,6 +1,8 @@
-import { Store, StoreFilters, PaginatedStores, ProductFilters, PaginatedProducts, StoreRating, CreateStoreRatingData, PaginatedStoreOrders, StoreOrder, StoreDashboardData } from './types'
+import { Store, StoreFilters, PaginatedStores, ProductFilters, PaginatedProducts, StoreRating, CreateStoreRatingData, PaginatedStoreOrders, StoreOrder, StoreDashboardData, PaginatedStoreCustomers, StoreAddress, CreateStoreAddressData, UpdateStoreAddressData, Address, CreateAddressData, UpdateAddressData } from './types'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 1000; // 1 second
 
 // Helper function to handle API responses
 async function handleResponse<T>(response: Response): Promise<T> {
@@ -15,6 +17,24 @@ async function handleResponse<T>(response: Response): Promise<T> {
   }
   
   return data.data
+}
+
+// Add a delay helper function
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Add a retry wrapper function
+export async function fetchWithRetry(url: string, options: RequestInit, retries = MAX_RETRIES): Promise<Response> {
+  try {
+    const response = await fetch(url, options);
+    return response;
+  } catch (error) {
+    if (retries > 0) {
+      console.log(`Retrying request... (${retries} attempts left)`);
+      await delay(RETRY_DELAY);
+      return fetchWithRetry(url, options, retries - 1);
+    }
+    throw error;
+  }
 }
 
 // Get all stores with optional filters
@@ -176,7 +196,7 @@ export async function getStoreOrderById(orderId: string): Promise<StoreOrder> {
   }
 
   try {
-    const response = await fetch(
+    const response = await fetchWithRetry(
       `${API_URL}/api/stores/orders/${orderId}`,
       {
         headers: {
@@ -187,15 +207,43 @@ export async function getStoreOrderById(orderId: string): Promise<StoreOrder> {
       }
     );
 
+    // Check if response exists before trying to parse JSON
+    if (!response) {
+      throw new Error('No response received from server');
+    }
+
     const data = await response.json();
     
     if (!response.ok || !data.success) {
-      throw new Error(data.message || 'Failed to fetch order details');
+      // Log more details about the error
+      console.error('API Error Details:', {
+        status: response.status,
+        statusText: response.statusText,
+        data
+      });
+      throw new Error(data.message || `Failed to fetch order details (Status: ${response.status})`);
+    }
+
+    // Validate the data structure
+    if (!data.data) {
+      throw new Error('Invalid response format: missing data property');
     }
 
     return data.data;
   } catch (error) {
-    console.error('Error fetching order details:', error);
+    // Enhanced error logging
+    console.error('Error fetching order details:', {
+      orderId,
+      error,
+      apiUrl: API_URL,
+      timestamp: new Date().toISOString()
+    });
+    
+    // Provide more specific error messages
+    if (error instanceof TypeError && error.message === 'Failed to fetch') {
+      throw new Error('Network error: Unable to connect to the server. Please check your internet connection.');
+    }
+    
     throw error;
   }
 }
@@ -208,27 +256,45 @@ export async function markOrderAsReady(orderId: string): Promise<StoreOrder> {
   }
 
   try {
-    const response = await fetch(
+    const response = await fetchWithRetry(
       `${API_URL}/api/stores/orders/${orderId}/ready`,
       {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
-        },
-        cache: 'no-store'
+        }
       }
     );
+
+    if (!response) {
+      throw new Error('No response received from server');
+    }
 
     const data = await response.json();
     
     if (!response.ok || !data.success) {
-      throw new Error(data.message || 'Failed to mark order as ready');
+      console.error('API Error Details:', {
+        status: response.status,
+        statusText: response.statusText,
+        data
+      });
+      throw new Error(data.message || `Failed to mark order as ready (Status: ${response.status})`);
     }
 
     return data.data;
   } catch (error) {
-    console.error('Error marking order as ready:', error);
+    console.error('Error marking order as ready:', {
+      orderId,
+      error,
+      apiUrl: API_URL,
+      timestamp: new Date().toISOString()
+    });
+    
+    if (error instanceof TypeError && error.message === 'Failed to fetch') {
+      throw new Error('Network error: Unable to connect to the server. Please check your internet connection.');
+    }
+    
     throw error;
   }
 }
@@ -278,6 +344,289 @@ export async function getStoreDashboard(): Promise<StoreDashboardData> {
     return formattedData;
   } catch (error) {
     console.error('Error fetching dashboard data:', error);
+    throw error;
+  }
+}
+
+export async function getStoreCustomers(page: number = 1, limit: number = 10): Promise<PaginatedStoreCustomers> {
+  const token = localStorage.getItem('token');
+  
+  if (!token) {
+    throw new Error('Authentication required');
+  }
+
+  try {
+    const response = await fetchWithRetry(
+      `${API_URL}/api/stores/customers?page=${page}&limit=${limit}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        cache: 'no-store'
+      }
+    );
+
+    if (!response) {
+      throw new Error('No response received from server');
+    }
+
+    const data = await response.json();
+    
+    if (!response.ok || !data.success) {
+      console.error('API Error Details:', {
+        status: response.status,
+        statusText: response.statusText,
+        data
+      });
+      throw new Error(data.message || 'Failed to fetch customers');
+    }
+
+    return data.data;
+  } catch (error) {
+    console.error('Error fetching store customers:', error);
+    throw error;
+  }
+}
+
+export async function createStoreAddress(addressData: CreateStoreAddressData): Promise<StoreAddress> {
+  const token = localStorage.getItem('token');
+  
+  if (!token) {
+    throw new Error('Authentication required');
+  }
+
+  try {
+    const response = await fetchWithRetry(
+      `${API_URL}/api/stores/address`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(addressData)
+      }
+    );
+
+    if (!response) {
+      throw new Error('No response received from server');
+    }
+
+    const data = await response.json();
+    
+    if (!response.ok || !data.success) {
+      console.error('API Error Details:', {
+        status: response.status,
+        statusText: response.statusText,
+        data
+      });
+      throw new Error(data.message || 'Failed to create store address');
+    }
+
+    return data.data.address;
+  } catch (error) {
+    console.error('Error creating store address:', error);
+    throw error;
+  }
+}
+
+export async function updateStoreAddress(addressData: UpdateStoreAddressData): Promise<StoreAddress> {
+  const token = localStorage.getItem('token');
+  
+  if (!token) {
+    throw new Error('Authentication required');
+  }
+
+  try {
+    const response = await fetchWithRetry(
+      `${API_URL}/api/stores/address/${addressData.addressId}`,
+      {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(addressData)
+      }
+    );
+
+    if (!response) {
+      throw new Error('No response received from server');
+    }
+
+    const data = await response.json();
+    
+    if (!response.ok || !data.success) {
+      console.error('API Error Details:', {
+        status: response.status,
+        statusText: response.statusText,
+        data
+      });
+      throw new Error(data.message || 'Failed to update store address');
+    }
+
+    return data.data.address;
+  } catch (error) {
+    console.error('Error updating store address:', error);
+    throw error;
+  }
+}
+
+export async function getAddresses(): Promise<Address[]> {
+  const token = localStorage.getItem('token');
+  
+  if (!token) {
+    throw new Error('Authentication required');
+  }
+
+  try {
+    const response = await fetchWithRetry(
+      `${API_URL}/api/addresses`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    const data = await response.json();
+    
+    if (!response.ok || !data.success) {
+      throw new Error(data.message || 'Failed to fetch addresses');
+    }
+
+    return data.data;
+  } catch (error) {
+    console.error('Error fetching addresses:', error);
+    throw error;
+  }
+}
+
+export async function getAddressById(addressId: string): Promise<Address> {
+  const token = localStorage.getItem('token');
+  
+  if (!token) {
+    throw new Error('Authentication required');
+  }
+
+  try {
+    const response = await fetchWithRetry(
+      `${API_URL}/api/addresses/${addressId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    const data = await response.json();
+    
+    if (!response.ok || !data.success) {
+      throw new Error(data.message || 'Failed to fetch address');
+    }
+
+    return data.data;
+  } catch (error) {
+    console.error('Error fetching address:', error);
+    throw error;
+  }
+}
+
+export async function createAddress(addressData: CreateAddressData): Promise<Address> {
+  const token = localStorage.getItem('token');
+  
+  if (!token) {
+    throw new Error('Authentication required');
+  }
+
+  try {
+    const response = await fetchWithRetry(
+      `${API_URL}/api/addresses`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(addressData)
+      }
+    );
+
+    const data = await response.json();
+    
+    if (!response.ok || !data.success) {
+      throw new Error(data.message || 'Failed to create address');
+    }
+
+    return data.data;
+  } catch (error) {
+    console.error('Error creating address:', error);
+    throw error;
+  }
+}
+
+export async function updateAddress(addressData: UpdateAddressData): Promise<Address> {
+  const token = localStorage.getItem('token');
+  
+  if (!token) {
+    throw new Error('Authentication required');
+  }
+
+  try {
+    const response = await fetchWithRetry(
+      `${API_URL}/api/addresses/${addressData.addressId}`,
+      {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(addressData)
+      }
+    );
+
+    const data = await response.json();
+    
+    if (!response.ok || !data.success) {
+      throw new Error(data.message || 'Failed to update address');
+    }
+
+    return data.data;
+  } catch (error) {
+    console.error('Error updating address:', error);
+    throw error;
+  }
+}
+
+export async function deleteAddress(addressId: string): Promise<void> {
+  const token = localStorage.getItem('token');
+  
+  if (!token) {
+    throw new Error('Authentication required');
+  }
+
+  try {
+    const response = await fetchWithRetry(
+      `${API_URL}/api/addresses/${addressId}`,
+      {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    const data = await response.json();
+    
+    if (!response.ok || !data.success) {
+      throw new Error(data.message || 'Failed to delete address');
+    }
+  } catch (error) {
+    console.error('Error deleting address:', error);
     throw error;
   }
 } 

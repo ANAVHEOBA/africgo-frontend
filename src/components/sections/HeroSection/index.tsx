@@ -12,9 +12,8 @@ export default function HeroSection() {
 
       <div className="container mx-auto px-4">
         <div className="hero-content text-center space-y-8 max-w-4xl mx-auto">
-          {/* Main Title */}
           <motion.h1
-            className="text-display-large font-bold hero-gradient-text"
+            className="text-3xl lg:text-display-large font-bold hero-gradient-text"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}

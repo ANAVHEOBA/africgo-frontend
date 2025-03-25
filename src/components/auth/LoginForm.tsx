@@ -85,7 +85,7 @@ export default function LoginForm() {
       >
         {/* Account Type */}
         <div className="mb-6">
-          <label className="block text-white mb-2">Account Type</label>
+          <label className="block text-dark mb-2">Account Type</label>
           <div className="flex gap-4">
             <button
               type="button"
@@ -93,7 +93,7 @@ export default function LoginForm() {
               className={`flex-1 py-2 px-4 rounded ${
                 accountType === "merchant"
                   ? "bg-gold-primary text-dark-primary"
-                  : "bg-dark-secondary text-white"
+                  : "bg-dark-secondary text-dark"
               }`}
             >
               Store Owner
@@ -104,7 +104,7 @@ export default function LoginForm() {
               className={`flex-1 py-2 px-4 rounded ${
                 accountType === "consumer"
                   ? "bg-gold-primary text-dark-primary"
-                  : "bg-dark-secondary text-white"
+                  : "bg-dark-secondary text-dark"
               }`}
             >
               Consumer
@@ -114,7 +114,7 @@ export default function LoginForm() {
 
         {/* Email */}
         <div>
-          <label htmlFor="email" className="block text-white mb-2">
+          <label htmlFor="email" className="block text-dark mb-2">
             Email Address
           </label>
           <input
@@ -125,7 +125,7 @@ export default function LoginForm() {
               setFormData({ ...formData, email: e.target.value })
             }
             className="w-full px-4 py-3 bg-dark-secondary border border-white/10 rounded-lg
-              text-white placeholder:text-gray-400
+              text-dark placeholder:text-gray-400
               focus:outline-none focus:ring-2 focus:ring-gold-primary focus:border-transparent
               hover:border-gold-primary/50
               transition-all duration-300"
@@ -135,7 +135,7 @@ export default function LoginForm() {
 
         {/* Password */}
         <div>
-          <label htmlFor="password" className="block text-white mb-2">
+          <label htmlFor="password" className="block text-dark mb-2">
             Password
           </label>
           <input
@@ -146,7 +146,7 @@ export default function LoginForm() {
               setFormData({ ...formData, password: e.target.value })
             }
             className="w-full px-4 py-3 bg-dark-secondary border border-white/10 rounded-lg
-              text-white placeholder:text-gray-400
+              text-dark placeholder:text-gray-400
               focus:outline-none focus:ring-2 focus:ring-gold-primary focus:border-transparent
               hover:border-gold-primary/50
               transition-all duration-300"
@@ -180,7 +180,7 @@ export default function LoginForm() {
       >
         <Link
           href="/"
-          className="text-text-secondary hover:text-white transition-colors"
+          className="text-text-secondary hover:text-dark transition-colors"
         >
           ← Back to Home
         </Link>

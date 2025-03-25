@@ -8,35 +8,36 @@ interface MainNavProps {
   className?: string;
 }
 
-const navItems = [
-  {
-    name: "Benefits",
-    href: "#benefits",
-  },
-  {
-    name: "Features",
-    href: "#features",
-  },
-  {
-    name: "How It Works",
-    href: "#how-it-works",
-  },
-  {
-    name: "Success Stories",
-    href: "#success-stories",
-  },
-  {
-    name: "Stores",
-    href: "/stores",
-  },
-  {
-    label: "Track Order",
-    href: "/track",
-  },
-];
-
-export default function MainNav({ className }: MainNavProps) {
+const MainNav: React.FC<MainNavProps> = ({ className }) => {
   const pathname = usePathname();
+  const isHomePage = pathname === "/"; // Check if on homepage
+
+  const navItems = [
+    {
+      name: "Features",
+      href: isHomePage ? "#features" : "/#features", // Adjust for non-home pages
+    },
+    {
+      name: "How It Works",
+      href: isHomePage ? "#how-it-works" : "/#how-it-works",
+    },
+    {
+      name: "Benefits",
+      href: isHomePage ? "#benefits" : "/#benefits",
+    },
+    {
+      name: "Success Stories",
+      href: isHomePage ? "#success-stories" : "/#success-stories",
+    },
+    {
+      name: "Stores",
+      href: "/stores", // External links remain unchanged
+    },
+    {
+      name: "Track Order",
+      href: "/track",
+    },
+  ];
 
   return (
     <nav className={`relative ${className}`}>
@@ -47,7 +48,7 @@ export default function MainNav({ className }: MainNavProps) {
             href={item.href}
             className="relative px-4 py-2 group"
           >
-            <span className="relative text-sm font-medium text-text-secondary hover:text-white transition-colors duration-200">
+            <span className="relative text-sm font-medium text-text-secondary hover:text-dark transition-colors duration-200">
               {item.name}
               <span className="absolute -bottom-1 left-0 w-0 h-[2px] bg-gold-primary transition-all duration-300 group-hover:w-full" />
             </span>
@@ -57,4 +58,6 @@ export default function MainNav({ className }: MainNavProps) {
       </div>
     </nav>
   );
-}
+};
+
+export default MainNav;

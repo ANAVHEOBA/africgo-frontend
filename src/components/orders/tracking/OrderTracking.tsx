@@ -24,7 +24,9 @@ export default function OrderTracking() {
       const data = await trackOrder(trackingNumber);
       setOrder(data);
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Failed to track order");
+      setError(
+        error instanceof Error ? error.message : "Failed to track order"
+      );
       setOrder(null);
     } finally {
       setLoading(false);
@@ -32,7 +34,10 @@ export default function OrderTracking() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8">
+    <div
+      className="max-w-3xl mx-auto space-y-8"
+      style={{ paddingTop: "100px" }}
+    >
       <div className="text-center">
         <h1 className="text-3xl font-bold text-gray-900">Track Your Order</h1>
         <p className="mt-2 text-gray-600">
@@ -55,15 +60,17 @@ export default function OrderTracking() {
           type="submit"
           disabled={loading}
           className={`w-full py-3 rounded-lg font-medium
-            ${loading ? "bg-gold-primary/50" : "bg-gold-primary hover:bg-gold-secondary"}
+            ${
+              loading
+                ? "bg-gold-primary/50"
+                : "bg-gold-primary hover:bg-gold-secondary"
+            }
             text-white transition-colors`}
         >
           {loading ? "Tracking..." : "Track Order"}
         </button>
 
-        {error && (
-          <p className="text-red-500 text-center">{error}</p>
-        )}
+        {error && <p className="text-red-500 text-center">{error}</p>}
       </form>
 
       {order && (
@@ -79,7 +86,8 @@ export default function OrderTracking() {
                   Order #{order.trackingNumber}
                 </h2>
                 <p className="text-gray-600">
-                  Estimated Delivery: {new Date(order.estimatedDeliveryDate).toLocaleDateString()}
+                  Estimated Delivery:{" "}
+                  {new Date(order.estimatedDeliveryDate).toLocaleDateString()}
                 </p>
               </div>
               <span
@@ -102,11 +110,20 @@ export default function OrderTracking() {
               <div>
                 <h3 className="font-medium text-gray-900">Delivery Address</h3>
                 <div className="mt-2 text-gray-600">
-                  <p>{order.deliveryAddress.manualAddress?.recipientName || order.deliveryAddress.recipientName}</p>
-                  <p>{order.deliveryAddress.manualAddress?.street || order.deliveryAddress.street}</p>
                   <p>
-                    {order.deliveryAddress.manualAddress?.city || order.deliveryAddress.city}, 
-                    {order.deliveryAddress.manualAddress?.state || order.deliveryAddress.state}
+                    {order.deliveryAddress.manualAddress?.recipientName ||
+                      order.deliveryAddress.recipientName}
+                  </p>
+                  <p>
+                    {order.deliveryAddress.manualAddress?.street ||
+                      order.deliveryAddress.street}
+                  </p>
+                  <p>
+                    {order.deliveryAddress.manualAddress?.city ||
+                      order.deliveryAddress.city}
+                    ,
+                    {order.deliveryAddress.manualAddress?.state ||
+                      order.deliveryAddress.state}
                   </p>
                 </div>
               </div>
@@ -125,4 +142,4 @@ export default function OrderTracking() {
       )}
     </div>
   );
-} 
+}

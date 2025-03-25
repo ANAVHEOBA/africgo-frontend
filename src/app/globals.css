@@ -2,19 +2,23 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+  scroll-behavior: smooth;
+}
+
 :root {
   /* True gold palette */
-  --gold-primary: #D4AF37;     /* Classic gold */
-  --gold-secondary: #CFB53B;   /* Rich gold */
-  --gold-accent: #C5A028;      /* Deep gold */
-  --gold-highlight: #E6C640;   /* Bright gold */
-  --gold-glow: #FFD700;        /* Metallic gold */
-  --dark-primary: #FFFFFF;     /* White */
-  --dark-secondary: #FAFAFA;   /* Very light grey */
-  --dark-tertiary: #F5F5F5;    /* Light background */
-  --text-primary: #0F1111;     /* Dark text */
-  --text-secondary: #565959;   /* Secondary text */
-  
+  --gold-primary: #d4af37; /* Classic gold */
+  --gold-secondary: #cfb53b; /* Rich gold */
+  --gold-accent: #c5a028; /* Deep gold */
+  --gold-highlight: #e6c640; /* Bright gold */
+  --gold-glow: #ffd700; /* Metallic gold */
+  --dark-primary: #ffffff; /* White */
+  --dark-secondary: #fafafa; /* Very light grey */
+  --dark-tertiary: #f5f5f5; /* Light background */
+  --text-primary: #0f1111; /* Dark text */
+  --text-secondary: #565959; /* Secondary text */
+
   /* Animation variables */
   --transition-default: all 0.3s ease;
 }
@@ -27,17 +31,17 @@
 
   /* Updated background effect */
   body::before {
-    content: '';
+    content: "";
     position: fixed;
     inset: -50%;
-    background: 
-      linear-gradient(90deg, 
-        transparent 0%, 
-        var(--gold-primary) 25%, 
-        var(--gold-secondary) 50%,
-        var(--gold-primary) 75%, 
-        transparent 100%
-      );
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      var(--gold-primary) 25%,
+      var(--gold-secondary) 50%,
+      var(--gold-primary) 75%,
+      transparent 100%
+    );
     opacity: 0.05;
     filter: blur(150px);
     transform-origin: center;
@@ -52,7 +56,7 @@
   }
 
   .nav-link::after {
-    content: '';
+    content: "";
     @apply absolute left-0 bottom-0 w-0 h-0.5 bg-gold-primary transition-all duration-300;
   }
 

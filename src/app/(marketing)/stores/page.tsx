@@ -1,64 +1,73 @@
-"use client"
+"use client";
 
-import { useCallback, useState, useEffect } from 'react'
-import { Store, StoreFilters as StoreFiltersType } from '@/lib/stores/types'
-import { getStores } from '@/lib/stores/api'
-import StoreGrid from '@/components/stores/listing/StoreGrid'
-import StoreFilters from '@/components/stores/listing/StoreFilters'
+import { useCallback, useState, useEffect } from "react";
+import { Store, StoreFilters as StoreFiltersType } from "@/lib/stores/types";
+import { getStores } from "@/lib/stores/api";
+import StoreGrid from "@/components/stores/listing/StoreGrid";
+import StoreFilters from "@/components/stores/listing/StoreFilters";
 
 export default function StoresPage() {
-  const [stores, setStores] = useState<Store[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [hasMore, setHasMore] = useState(false)
+  const [stores, setStores] = useState<Store[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(false);
   const [filters, setFilters] = useState<StoreFiltersType>({
     page: 1,
     limit: 12,
-    search: '',
-    category: '',
-    city: '',
-    sortBy: 'createdAt',
-    sortOrder: 'desc'
-  })
+    search: "",
+    category: "",
+    city: "",
+    sortBy: "createdAt",
+    sortOrder: "desc",
+  });
 
-  const fetchStores = useCallback(async (isLoadMore = false) => {
-    try {
-      setLoading(true)
-      const data = await getStores(filters)
-      
-      setStores(prev => 
-        isLoadMore ? [...prev, ...data.stores] : data.stores
-      )
-      setHasMore(data.pagination.hasMore)
-      setError(null)
-    } catch (err) {
-      setError('Failed to load stores. Please try again.')
-    } finally {
-      setLoading(false)
-    }
-  }, [filters])
+  const fetchStores = useCallback(
+    async (isLoadMore = false) => {
+      try {
+        setLoading(true);
+        const data = await getStores(filters);
+
+        setStores((prev) =>
+          isLoadMore ? [...prev, ...data.stores] : data.stores
+        );
+        setHasMore(data.pagination.hasMore);
+        setError(null);
+      } catch (err) {
+        setError("Failed to load stores. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [filters]
+  );
 
   useEffect(() => {
-    fetchStores()
-  }, [fetchStores])
+    fetchStores();
+  }, [fetchStores]);
 
-  const handleFilterChange = useCallback((newFilters: Partial<StoreFiltersType>) => {
-    setFilters(prev => ({
-      ...prev,
-      ...newFilters,
-      page: 1 // Reset page when filters change
-    }))
-  }, [])
+  const handleFilterChange = useCallback(
+    (newFilters: Partial<StoreFiltersType>) => {
+      setFilters((prev) => ({
+        ...prev,
+        ...newFilters,
+        page: 1, // Reset page when filters change
+      }));
+    },
+    []
+  );
 
   const handleLoadMore = useCallback(() => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
-      page: prev.page + 1
-    }))
-  }, [])
+      page: prev.page + 1,
+    }));
+  }, []);
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
+    <div
+      className="container mx-auto px-4 py-8 max-w-7xl"
+      style={{ paddingTop: "100px" }}
+    >
       <div className="space-y-8 mt-16">
         {/* Header */}
         <div className="text-center space-y-3 mb-12">
@@ -71,10 +80,7 @@ export default function StoresPage() {
         </div>
 
         {/* Filters */}
-        <StoreFilters 
-          filters={filters}
-          onFilterChange={handleFilterChange}
-        />
+        <StoreFilters filters={filters} onFilterChange={handleFilterChange} />
 
         {/* Error Message */}
         {error && (
@@ -84,7 +90,7 @@ export default function StoresPage() {
         )}
 
         {/* Stores Grid */}
-        <StoreGrid 
+        <StoreGrid
           stores={stores}
           loading={loading}
           hasMore={hasMore}
@@ -92,5 +98,5 @@ export default function StoresPage() {
         />
       </div>
     </div>
-  )
-} 
+  );
+}

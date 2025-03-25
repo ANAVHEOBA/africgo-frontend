@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const navItems = [
   { label: "Overview", href: "/account" },
@@ -10,10 +10,10 @@ const navItems = [
   { label: "Orders", href: "/account/orders" },
   { label: "Addresses", href: "/account/addresses" },
   { label: "Settings", href: "/account/settings" },
-]
+];
 
 export default function AccountNav() {
-  const pathname = usePathname()
+  const pathname = usePathname();
 
   return (
     <nav className="py-6 px-4">
@@ -34,5 +34,5 @@ export default function AccountNav() {
         ))}
       </ul>
     </nav>
-  )
-} 
+  );
+}

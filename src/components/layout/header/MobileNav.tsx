@@ -41,7 +41,7 @@ export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
               {/* Close button */}
               <button
                 onClick={onClose}
-                className="absolute top-4 right-4 p-2 text-white/60 hover:text-white"
+                className="absolute top-4 right-4 p-2 text-dark/60 hover:text-dark"
               >
                 <CloseIcon />
               </button>
@@ -53,7 +53,7 @@ export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
                     key={item.href}
                     href={item.href}
                     onClick={onClose}
-                    className="block p-4 text-white/70 hover:text-white hover:bg-gold-primary/5 rounded-lg transition-all duration-300"
+                    className="block p-4 text-dark/70 hover:text-dark hover:bg-gold-primary/10 rounded-lg transition-all duration-300"
                   >
                     {item.name}
                   </Link>
@@ -61,13 +61,13 @@ export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
               </nav>
 
               {/* Auth Buttons */}
-              <div className="mt-8 space-y-4">
+              <div className="mt-3 space-y-4">
                 <Link href="/login" onClick={onClose}>
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className="w-full px-6 py-3 text-sm font-medium text-white border border-white/10 
-                      hover:bg-white/5 rounded-lg transition-colors duration-300"
+                    className="w-full px-6 py-3 text-sm font-medium bg-gradient-to-r 
+                    from-gold-primary to-gold-secondary text-light-primary rounded-lg mb-3"
                   >
                     Log In
                   </motion.button>
