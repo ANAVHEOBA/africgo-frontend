@@ -47,7 +47,7 @@ export default function UserNav() {
       ) : (
         <>
           <Link href="/login">
-            <span className="text-sm font-medium text-text-secondary hover:text-white transition-colors duration-200">
+            <span className="text-sm font-medium text-text-secondary hover:text-dark transition-colors duration-200">
               Log In
             </span>
           </Link>

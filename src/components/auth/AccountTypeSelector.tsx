@@ -1,20 +1,22 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import { useState } from "react"
-import RegisterForm from "./RegisterForm"
-import ConsumerRegisterForm from "./ConsumerRegisterForm"
-import Link from "next/link"
+import { motion } from "framer-motion";
+import { useState } from "react";
+import RegisterForm from "./RegisterForm";
+import ConsumerRegisterForm from "./ConsumerRegisterForm";
+import Link from "next/link";
 
 export default function AccountTypeSelector() {
-  const [selectedType, setSelectedType] = useState<"merchant" | "consumer" | null>(null)
+  const [selectedType, setSelectedType] = useState<
+    "merchant" | "consumer" | null
+  >(null);
 
   if (selectedType === "merchant") {
-    return <RegisterForm />
+    return <RegisterForm />;
   }
 
   if (selectedType === "consumer") {
-    return <ConsumerRegisterForm />
+    return <ConsumerRegisterForm />;
   }
 
   return (
@@ -54,23 +56,23 @@ export default function AccountTypeSelector() {
       >
         <Link
           href="/"
-          className="text-text-secondary hover:text-white transition-colors"
+          className="text-text-secondary hover:text-dark transition-colors"
         >
           ← Back to Home
         </Link>
       </motion.div>
     </motion.div>
-  )
+  );
 }
 
-function AccountTypeCard({ 
-  title, 
-  description, 
-  onClick 
-}: { 
-  title: string
-  description: string
-  onClick: () => void
+function AccountTypeCard({
+  title,
+  description,
+  onClick,
+}: {
+  title: string;
+  description: string;
+  onClick: () => void;
 }) {
   return (
     <motion.button
@@ -83,5 +85,5 @@ function AccountTypeCard({
       <h3 className="text-xl font-semibold text-white mb-2">{title}</h3>
       <p className="text-text-secondary">{description}</p>
     </motion.button>
-  )
-} 
+  );
+}

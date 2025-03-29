@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { getAddresses } from '@/lib/stores/api';
-import { Address } from '@/lib/stores/types';
-import AddressForm from '@/components/dashboard/settings/AddressForm';
-import { toast } from 'react-hot-toast';
-import { PlusIcon, MapPinIcon } from '@heroicons/react/24/outline';
+import { useState, useEffect } from "react";
+import { getAddresses } from "@/lib/stores/api";
+import { Address } from "@/lib/stores/types";
+import AddressForm from "@/components/dashboard/settings/AddressForm";
+import { toast } from "react-hot-toast";
+import { PlusIcon, MapPinIcon } from "@heroicons/react/24/outline";
 
 export default function AddressManagementPage() {
   const [addresses, setAddresses] = useState<Address[]>([]);
@@ -23,7 +23,7 @@ export default function AddressManagementPage() {
       const data = await getAddresses();
       setAddresses(data);
     } catch (error) {
-      toast.error('Failed to fetch addresses');
+      toast.error("Failed to fetch addresses");
     } finally {
       setLoading(false);
     }
@@ -58,22 +58,31 @@ export default function AddressManagementPage() {
       <div className="mb-8">
         <div className="flex items-center space-x-3 mb-2">
           <MapPinIcon className="w-8 h-8 text-gold-600" />
-          <h1 className="text-3xl font-bold text-gold-900">Address Management</h1>
+          <h1 className="text-3xl font-bold text-gold-900">
+            Address Management
+          </h1>
         </div>
-        <p className="text-gold-600 ml-11">Manage your shipping and billing addresses</p>
+        <p className="text-gold-600 ml-11">
+          Manage your shipping and billing addresses
+        </p>
       </div>
 
       <div className="flex justify-end mb-8">
         <button
           onClick={handleAddNew}
-          className="flex items-center px-6 py-3 bg-gradient-to-r from-gold-600 to-gold-700 text-white rounded-lg hover:from-gold-700 hover:to-gold-800 transform hover:scale-105 transition-all duration-200 shadow-md hover:shadow-xl"
+          className="flex items-center px-6 py-3 bg-gradient-to-r from-gold-600 to-gold-700 text-dark rounded-lg hover:from-gold-700 hover:to-gold-800 transform hover:scale-105 transition-all duration-200 shadow-md hover:shadow-xl"
         >
           <PlusIcon className="w-5 h-5 mr-2" />
           Add New Address
         </button>
       </div>
 
-      {showForm && <AddressForm existingAddress={selectedAddress} onClose={handleFormClose} />}
+      {showForm && (
+        <AddressForm
+          existingAddress={selectedAddress}
+          onClose={handleFormClose}
+        />
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {addresses.map((address) => (
@@ -100,8 +109,12 @@ export default function AddressManagementPage() {
               </div>
               <div className="space-y-1 text-sm text-gold-600">
                 <p>{address.street}</p>
-                <p>{address.city}, {address.state}</p>
-                <p>{address.country}, {address.postalCode}</p>
+                <p>
+                  {address.city}, {address.state}
+                </p>
+                <p>
+                  {address.country}, {address.postalCode}
+                </p>
               </div>
             </div>
             <div className="h-1 w-full bg-gradient-to-r from-gold-600 to-gold-400 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
@@ -110,4 +123,4 @@ export default function AddressManagementPage() {
       </div>
     </div>
   );
-} 
+}
