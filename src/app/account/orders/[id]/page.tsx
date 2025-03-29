@@ -1,18 +1,13 @@
 import { Metadata } from "next"
 import OrderDetailsWrapper from "@/components/account/orders/OrderDetailsWrapper"
 
-interface OrderDetailsPageProps {
-  params: {
-    id: string;
-  };
-  searchParams: { [key: string]: string | string[] | undefined };
-}
-
 export default async function OrderDetailsPage({
   params,
   searchParams,
-}: OrderDetailsPageProps) {
-  // Ensure params.id is available before rendering
+}: {
+  params: { id: string }
+  searchParams: { [key: string]: string | string[] | undefined }
+}) {
   if (!params?.id) {
     return <div className="text-gold-primary text-xl">Invalid order ID</div>;
   }
@@ -25,8 +20,11 @@ export default async function OrderDetailsPage({
   );
 }
 
-// Generate metadata dynamically
-export async function generateMetadata({ params }: OrderDetailsPageProps): Promise<Metadata> {
+export async function generateMetadata({ 
+  params 
+}: { 
+  params: { id: string } 
+}): Promise<Metadata> {
   return {
     title: `Order ${params.id} Details | GoFromA2zAfrica`,
     description: `View details for order ${params.id}`,
