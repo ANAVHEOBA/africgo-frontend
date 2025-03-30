@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  distDir: "build",
   eslint: {
     ignoreDuringBuilds: true, // This will ignore ESLint errors during build
     // Alternatively, you can configure specific rules:
@@ -34,7 +35,6 @@ const nextConfig = {
     minimumCacheTTL: 60,
     formats: ["image/webp"],
   },
-  distDir: "build",
 };
 
 module.exports = nextConfig;
