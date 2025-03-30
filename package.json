@@ -6,9 +6,11 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "export": "next export"
   },
   "dependencies": {
+    "@bitc/cnad": "^1.1.0",
     "@heroicons/react": "^2.2.0",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.4.2",

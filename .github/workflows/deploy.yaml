@@ -1,0 +1,51 @@
+on:
+  push:
+    branches: ["master"]
+
+name: 🚀 DEPLOY
+
+jobs:
+  web-deploy:
+    name: 🎉 Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Copy .env.local.example to .env
+        run: cp .env.local.example .env
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build project
+        run: npm run build
+
+      - name: Creating restart file
+        run: |
+          mkdir -p tmp && touch tmp/restart.txt
+          echo $RANDOM > tmp/restart.txt
+
+      - name: Sync build folder to server directory
+        uses: SamKirkland/FTP-Deploy-Action@4.3.2
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: build/
+          local-dir: build/
+
+      - name: Upload restart file to root directory
+        uses: SamKirkland/FTP-Deploy-Action@4.3.2
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: tmp/
+          local-dir: tmp/
