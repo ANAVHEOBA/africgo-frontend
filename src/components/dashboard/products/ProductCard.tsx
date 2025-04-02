@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Product, ProductStatus } from "@/lib/products/types";
+import { Product, ProductStatus, ProductImage } from "@/lib/products/types";
 import { deleteProduct, updateProduct } from "@/lib/products/api";
 
 interface ProductCardProps {
@@ -20,8 +20,9 @@ export default function ProductCard({ product, onDelete }: ProductCardProps) {
   const [imageError, setImageError] = useState(false);
   const [isImageLoading, setIsImageLoading] = useState(true);
   const [isVisible, setIsVisible] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
-  // Use intersection observer to detect when card is visible
+  // Visibility observer effect
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -38,36 +39,50 @@ export default function ProductCard({ product, onDelete }: ProductCardProps) {
       observer.observe(element);
     }
 
-    return () => {
-      observer.disconnect();
-    };
+    return () => observer.disconnect();
   }, [product._id]);
 
-  // Set image URL only once when component mounts
+  // Add debug logging for product data
   useEffect(() => {
-    const url =
-      process.env.NODE_ENV === "development"
-        ? `https://picsum.photos/seed/${product._id}/400/300`
-        : product.images[0] || "";
+    console.log('ProductCard - Product Data:', {
+      id: product._id,
+      hasImages: product.images?.length > 0,
+      firstImage: product.images?.[0]
+    });
+  }, [product]);
 
-    setImageUrl(url);
+  // Image URL handling effect
+  useEffect(() => {
+    if (!product.images?.[0]?.url) {
+      setImageError(true);
+      setIsImageLoading(false);
+      return;
+    }
 
+    setImageUrl(product.images[0].url);
+    setImageError(false);
+    setIsImageLoading(true);
+    setImageLoaded(false);
+  }, [product.images]);
+
+  const handleImageLoad = useCallback(() => {
+    console.log('Image loaded:', imageUrl);
+    setIsImageLoading(false);
+    setImageLoaded(true);
+  }, [imageUrl]);
+
+  const handleImageError = useCallback(() => {
+    console.error('Image failed to load:', imageUrl);
+    setImageError(true);
+    setIsImageLoading(false);
+    setImageLoaded(false);
+  }, [imageUrl]);
+
+  // Cleanup effect
+  useEffect(() => {
     return () => {
       isMounted.current = false;
     };
-  }, [product._id, product.images]);
-
-  const handleImageLoad = useCallback(() => {
-    if (isMounted.current) {
-      setIsImageLoading(false);
-    }
-  }, []);
-
-  const handleImageError = useCallback(() => {
-    if (isMounted.current) {
-      setImageError(true);
-      setIsImageLoading(false);
-    }
   }, []);
 
   const handleEdit = () => {
@@ -119,6 +134,13 @@ export default function ProductCard({ product, onDelete }: ProductCardProps) {
     }
   };
 
+  // Move the console.log outside of the JSX
+  useEffect(() => {
+    if (isVisible) {
+      console.log('ProductCard - Render state:', { isVisible, imageUrl, imageError });
+    }
+  }, [isVisible, imageUrl, imageError]);
+
   return (
     <div
       id={`product-${product._id}`}
@@ -126,30 +148,34 @@ export default function ProductCard({ product, onDelete }: ProductCardProps) {
     >
       {/* Product Image */}
       <div className="relative h-48 bg-black/10">
-        {isVisible && imageUrl && !imageError ? (
+        {imageUrl ? (
           <>
             {isImageLoading && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/5">
+              <div className="absolute inset-0 flex items-center justify-center bg-black/5 z-10">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold-primary"></div>
               </div>
             )}
-            <Image
-              src={imageUrl}
-              alt={product.name}
-              fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              className={`object-cover transition-opacity duration-300 ${
-                isImageLoading ? "opacity-0" : "opacity-100"
-              }`}
-              onLoad={handleImageLoad}
-              onError={handleImageError}
-              loading="lazy"
-              quality={75}
-            />
+            <div className={`relative h-full transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}>
+              <Image
+                src={imageUrl}
+                alt={product.name}
+                fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                className="object-cover"
+                onLoad={handleImageLoad}
+                onError={handleImageError}
+                loading="eager"
+                priority={true}
+              />
+            </div>
           </>
         ) : (
           <div className="flex items-center justify-center h-full text-light-600">
-            <span>No Image</span>
+            <div className="text-center">
+              <span className="block">
+                {imageError ? 'Failed to load image' : 'No image available'}
+              </span>
+            </div>
           </div>
         )}
 

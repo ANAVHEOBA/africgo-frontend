@@ -22,6 +22,13 @@ export interface ShippingInfo {
   requiresSpecialHandling: boolean
 }
 
+export interface ProductImage {
+  url: string;
+  alt?: string;
+  publicId?: string;
+  _id?: string;
+}
+
 export interface Product {
   _id: string
   storeId: Types.ObjectId | string
@@ -29,7 +36,7 @@ export interface Product {
   description: string
   price: number
   category: string
-  images: string[]
+  images: ProductImage[]
   stock: number
   specifications?: {
     [key: string]: string
@@ -65,7 +72,7 @@ export interface CreateProductData {
   description: string
   price: number
   category: string
-  images: string[]
+  images: ProductImage[]
   stock: number
   specifications?: {
     material?: string
@@ -82,4 +89,25 @@ export interface CreateProductData {
   status?: ProductStatus
 }
 
-export interface UpdateProductData extends Partial<CreateProductData> {} 
+export interface UpdateProductData extends Partial<CreateProductData> {}
+
+export function isValidProductImage(image: unknown): image is ProductImage {
+  return (
+    typeof image === 'object' &&
+    image !== null &&
+    'url' in image &&
+    typeof (image as ProductImage).url === 'string' &&
+    (image as ProductImage).url.startsWith('http')
+  );
+}
+
+export function sanitizeProductImages(images: unknown[]): ProductImage[] {
+  return images
+    .filter(isValidProductImage)
+    .map(img => ({
+      url: img.url,
+      alt: img.alt || '',
+      publicId: img.publicId,
+      _id: img._id
+    }));
+} 
