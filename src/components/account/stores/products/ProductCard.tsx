@@ -6,6 +6,13 @@ import { useRouter } from "next/navigation";
 import { Product } from "@/lib/stores/types";
 import OrderForm from "@/components/account/orders/OrderForm";
 
+interface ProductImage {
+  url: string;
+  alt?: string;
+  _id?: string;
+  publicId?: string;
+}
+
 interface ProductCardProps {
   product: Product;
   storeSlug: string;
@@ -20,55 +27,59 @@ export default function ProductCard({ product, storeSlug, storeId }: ProductCard
   const [imageUrl, setImageUrl] = useState<string>("");
   const [imageError, setImageError] = useState(false);
   const [isImageLoading, setIsImageLoading] = useState(true);
-  const [isVisible, setIsVisible] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
-  // Use intersection observer to detect when card is visible
+  // Image URL handling effect
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    const element = document.getElementById(`product-${product._id}`);
-    if (element) {
-      observer.observe(element);
+    if (!Array.isArray(product.images) || !product.images.length) {
+      const placeholderUrl = `https://picsum.photos/seed/${product._id}/400/300`;
+      setImageUrl(placeholderUrl);
+      return;
     }
 
-    return () => {
-      observer.disconnect();
-    };
-  }, [product._id]);
+    const firstImage = product.images[0];
+    
+    // Handle both string and object image formats
+    const imageUrl = typeof firstImage === 'string' 
+      ? firstImage 
+      : (firstImage as ProductImage).url;
+    
+    if (!imageUrl) {
+      setImageError(true);
+      setIsImageLoading(false);
+      return;
+    }
 
-  // Set image URL
-  useEffect(() => {
-    const url =
-      process.env.NODE_ENV === "development"
-        ? `https://picsum.photos/seed/${product._id}/400/300`
-        : product.images[0] || "";
+    setImageUrl(imageUrl);
+    setImageError(false);
+    setIsImageLoading(true);
+    setImageLoaded(false);
 
-    setImageUrl(url);
-
-    return () => {
-      isMounted.current = false;
-    };
+    console.log('Setting image URL:', imageUrl);
   }, [product._id, product.images]);
 
   const handleImageLoad = useCallback(() => {
     if (isMounted.current) {
       setIsImageLoading(false);
+      setImageLoaded(true);
+      console.log('Image loaded successfully:', imageUrl);
     }
-  }, []);
+  }, [imageUrl]);
 
   const handleImageError = useCallback(() => {
     if (isMounted.current) {
       setImageError(true);
       setIsImageLoading(false);
+      setImageLoaded(false);
+      console.error('Image failed to load:', imageUrl);
     }
+  }, [imageUrl]);
+
+  // Cleanup effect
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
   }, []);
 
   const handleOrder = () => {
@@ -79,15 +90,14 @@ export default function ProductCard({ product, storeSlug, storeId }: ProductCard
     <>
       <div
         id={`product-${product._id}`}
-        className="bg-black/5 rounded-lg shadow-md overflow-hidden border border-gold-primary/20 
-          hover:border-gold-primary transition-all hover:shadow-lg"
+        className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
       >
         {/* Product Image */}
-        <div className="relative h-48 bg-black/10">
-          {isVisible && imageUrl && !imageError ? (
-            <>
+        <div className="relative h-48 bg-gray-100">
+          {imageUrl ? (
+            <div className="relative h-full">
               {isImageLoading && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/5">
+                <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-10">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold-primary"></div>
                 </div>
               )}
@@ -97,17 +107,16 @@ export default function ProductCard({ product, storeSlug, storeId }: ProductCard
                 fill
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 className={`object-cover transition-opacity duration-300 ${
-                  isImageLoading ? "opacity-0" : "opacity-100"
+                  imageLoaded ? 'opacity-100' : 'opacity-0'
                 }`}
                 onLoad={handleImageLoad}
                 onError={handleImageError}
-                loading="lazy"
-                quality={75}
+                priority={true}
               />
-            </>
+            </div>
           ) : (
-            <div className="flex items-center justify-center h-full text-gray-600">
-              <span>No Image</span>
+            <div className="flex items-center justify-center h-full text-gray-400">
+              <span>{imageError ? 'Failed to load image' : 'No image available'}</span>
             </div>
           )}
         </div>
@@ -186,7 +195,9 @@ export default function ProductCard({ product, storeSlug, storeId }: ProductCard
           <div className="max-h-[90vh] overflow-y-auto">
             <OrderForm
               storeId={storeId}
+              storeSlug={storeSlug}
               productId={product._id}
+              productPrice={product.price}
               quantity={quantity}
               onSuccess={() => setShowOrderForm(false)}
               onCancel={() => setShowOrderForm(false)}
