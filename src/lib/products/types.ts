@@ -36,7 +36,7 @@ export interface Product {
   description: string
   price: number
   category: string
-  images: ProductImage[]
+  images: (string | ProductImage)[]
   stock: number
   specifications?: {
     [key: string]: string

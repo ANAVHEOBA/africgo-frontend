@@ -31,18 +31,21 @@ export default function ProductCard({ product, storeSlug, storeId }: ProductCard
 
   // Image URL handling effect
   useEffect(() => {
-    if (!Array.isArray(product.images) || !product.images.length) {
+    if (!product.images?.length) {
       const placeholderUrl = `https://picsum.photos/seed/${product._id}/400/300`;
       setImageUrl(placeholderUrl);
+      setIsImageLoading(false);
       return;
     }
 
-    const firstImage = product.images[0];
-    
-    // Handle both string and object image formats
-    const imageUrl = typeof firstImage === 'string' 
-      ? firstImage 
-      : (firstImage as ProductImage).url;
+    const firstImage = product.images[0] as (string | ProductImage);
+    let imageUrl = '';
+
+    if (typeof firstImage === 'string') {
+      imageUrl = firstImage;
+    } else if (firstImage && typeof firstImage === 'object' && 'url' in firstImage) {
+      imageUrl = firstImage.url;
+    }
     
     if (!imageUrl) {
       setImageError(true);
@@ -51,10 +54,6 @@ export default function ProductCard({ product, storeSlug, storeId }: ProductCard
     }
 
     setImageUrl(imageUrl);
-    setImageError(false);
-    setIsImageLoading(true);
-    setImageLoaded(false);
-
     console.log('Setting image URL:', imageUrl);
   }, [product._id, product.images]);
 
@@ -94,29 +93,31 @@ export default function ProductCard({ product, storeSlug, storeId }: ProductCard
       >
         {/* Product Image */}
         <div className="relative h-48 bg-gray-100">
-          {imageUrl ? (
-            <div className="relative h-full">
-              {isImageLoading && (
-                <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-10">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold-primary"></div>
-                </div>
-              )}
-              <Image
-                src={imageUrl}
-                alt={product.name}
-                fill
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                className={`object-cover transition-opacity duration-300 ${
-                  imageLoaded ? 'opacity-100' : 'opacity-0'
-                }`}
-                onLoad={handleImageLoad}
-                onError={handleImageError}
-                priority={true}
-              />
+          {imageUrl && (
+            <Image
+              src={imageUrl}
+              alt={product.name}
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              className={`object-cover transition-opacity duration-300 ${
+                imageLoaded ? 'opacity-100' : 'opacity-0'
+              }`}
+              onLoadingComplete={() => {
+                setIsImageLoading(false);
+                setImageLoaded(true);
+              }}
+              onError={handleImageError}
+              priority={true}
+            />
+          )}
+          {isImageLoading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold-primary" />
             </div>
-          ) : (
-            <div className="flex items-center justify-center h-full text-gray-400">
-              <span>{imageError ? 'Failed to load image' : 'No image available'}</span>
+          )}
+          {imageError && (
+            <div className="absolute inset-0 flex items-center justify-center text-gray-400">
+              Failed to load image
             </div>
           )}
         </div>

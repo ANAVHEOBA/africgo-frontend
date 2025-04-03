@@ -15,10 +15,10 @@ export default function AccountStoreList() {
     const fetchStores = async () => {
       try {
         const data = await getStores();
-        // Extract stores array from paginated response
         setStores(data.stores || []);
         setLoading(false);
       } catch (error) {
+        console.error('Error fetching stores:', error);
         setError("Failed to load stores");
         setLoading(false);
       }
@@ -28,11 +28,17 @@ export default function AccountStoreList() {
   }, []);
 
   if (loading) {
-    return <div className="text-white">Loading stores...</div>;
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {[...Array(6)].map((_, i) => (
+          <div key={i} className="bg-gray-100 rounded-lg h-64 animate-pulse" />
+        ))}
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="text-red-400">{error}</div>;
+    return <div className="text-red-500">{error}</div>;
   }
 
   return (
@@ -50,8 +56,6 @@ export default function AccountStoreList() {
           <StoreCard
             key={store._id}
             store={store}
-            href={`/account/stores/${store.slug}`}
-            storeId={store._id}
           />
         ))}
       </motion.div>

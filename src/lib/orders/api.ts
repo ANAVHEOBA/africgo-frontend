@@ -64,39 +64,43 @@ interface PaginatedResponse<T> {
   message?: string;
 }
 
-export async function getOrders(page: number = 1, limit: number = 10): Promise<PaginatedResponse<Order>> {
+interface OrdersQueryParams {
+  page?: number;
+  limit?: number;
+  status?: 'PENDING' | 'CONFIRMED' | 'IN_TRANSIT' | 'DELIVERED';
+  startDate?: string;
+  endDate?: string;
+}
+
+export async function getOrders(params: OrdersQueryParams = {}): Promise<PaginatedResponse<Order>> {
   const token = getToken();
   
+  // Build query string from params
+  const queryParams = new URLSearchParams();
+  if (params.page) queryParams.append('page', params.page.toString());
+  if (params.limit) queryParams.append('limit', params.limit.toString());
+  if (params.status) queryParams.append('status', params.status);
+  if (params.startDate) queryParams.append('startDate', params.startDate);
+  if (params.endDate) queryParams.append('endDate', params.endDate);
+  
+  const queryString = queryParams.toString();
+  const url = `${API_URL}/api/orders/consumer/orders${queryString ? `?${queryString}` : ''}`;
+
   try {
-    const response = await fetch(
-      `${API_URL}/api/orders/consumer/orders?page=${page}&limit=${limit}`,
-      {
-        headers: {
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        cache: 'no-store'
-      }
-    );
+    const response = await fetch(url, {
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      cache: 'no-store'
+    });
 
     const data = await response.json();
-    console.log('Orders response:', data);
-
+    
     if (!data.success) {
       throw new Error(data.message || "Failed to fetch orders");
     }
-
-    // Calculate total pages if not provided by the API
-    const totalPages = data.data.totalPages || Math.ceil(data.data.total / limit);
-
-    return {
-      ...data,
-      data: {
-        ...data.data,
-        totalPages,
-        page: page,
-        limit: limit
-      }
-    };
+    
+    return data;
   } catch (error) {
     console.error('Error fetching orders:', error);
     throw error;

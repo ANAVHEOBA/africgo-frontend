@@ -13,33 +13,32 @@ export default function OrderList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalOrders, setTotalOrders] = useState(0);
+  const [selectedStatus, setSelectedStatus] = useState<string>("");
+  const [dateRange, setDateRange] = useState({
+    startDate: "",
+    endDate: "",
+  });
   const ordersPerPage = 10;
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
         setLoading(true);
-        const response = await getOrders(currentPage, ordersPerPage);
-        
-        // Calculate total pages if not provided
-        const calculatedTotalPages = Math.ceil(response.data.total / ordersPerPage);
-        
+        const queryParams = {
+          page: currentPage,
+          limit: ordersPerPage,
+          ...(selectedStatus && { status: selectedStatus as any }),
+          ...(dateRange.startDate && { startDate: dateRange.startDate }),
+          ...(dateRange.endDate && { endDate: dateRange.endDate }),
+        };
+
+        const response = await getOrders(queryParams);
         setOrders(response.data.orders);
-        setTotalPages(calculatedTotalPages);
+        setTotalPages(response.data.totalPages || Math.ceil(response.data.total / ordersPerPage));
         setTotalOrders(response.data.total);
-        
-        console.log('Pagination info:', {
-          currentPage,
-          totalPages: calculatedTotalPages,
-          totalOrders: response.data.total,
-          ordersPerPage,
-          ordersReceived: response.data.orders.length
-        });
       } catch (error) {
         console.error('Error fetching orders:', error);
-        setError(
-          error instanceof Error ? error.message : "Failed to fetch orders"
-        );
+        setError(error instanceof Error ? error.message : "Failed to fetch orders");
         setOrders([]);
       } finally {
         setLoading(false);
@@ -47,7 +46,21 @@ export default function OrderList() {
     };
 
     fetchOrders();
-  }, [currentPage]); // Re-fetch when page changes
+  }, [currentPage, selectedStatus, dateRange]);
+
+  // Add filter handlers
+  const handleStatusChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedStatus(event.target.value);
+    setCurrentPage(1); // Reset to first page when filter changes
+  };
+
+  const handleDateChange = (type: 'startDate' | 'endDate', value: string) => {
+    setDateRange(prev => ({
+      ...prev,
+      [type]: value
+    }));
+    setCurrentPage(1); // Reset to first page when filter changes
+  };
 
   const handlePageChange = (newPage: number) => {
     console.log('Changing to page:', newPage);
@@ -73,6 +86,43 @@ export default function OrderList() {
 
   return (
     <div className="space-y-6">
+      {/* Filters */}
+      <div className="flex flex-wrap gap-4 mb-6">
+        <div className="flex-1 min-w-[200px]">
+          <select
+            value={selectedStatus}
+            onChange={handleStatusChange}
+            className="w-full p-2 border rounded-lg"
+          >
+            <option value="">All Statuses</option>
+            <option value="PENDING">Pending</option>
+            <option value="CONFIRMED">Confirmed</option>
+            <option value="IN_TRANSIT">In Transit</option>
+            <option value="DELIVERED">Delivered</option>
+          </select>
+        </div>
+        
+        <div className="flex-1 min-w-[200px]">
+          <input
+            type="date"
+            value={dateRange.startDate}
+            onChange={(e) => handleDateChange('startDate', e.target.value)}
+            className="w-full p-2 border rounded-lg"
+            placeholder="Start Date"
+          />
+        </div>
+        
+        <div className="flex-1 min-w-[200px]">
+          <input
+            type="date"
+            value={dateRange.endDate}
+            onChange={(e) => handleDateChange('endDate', e.target.value)}
+            className="w-full p-2 border rounded-lg"
+            placeholder="End Date"
+          />
+        </div>
+      </div>
+
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900">My Orders</h1>
         <p className="text-gray-600">

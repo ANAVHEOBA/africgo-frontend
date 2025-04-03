@@ -8,8 +8,8 @@ const navItems = [
   { label: "Profile", href: "/account/profile" },
   { label: "Browse Stores", href: "/account/stores" },
   { label: "Orders", href: "/account/orders" },
-  { label: "Addresses", href: "/account/addresses" },
-  { label: "Settings", href: "/account/settings" },
+  //{ label: "Addresses", href: "/account/addresses" },
+  //{ label: "Settings", href: "/account/settings" },
 ];
 
 export default function AccountNav() {
