@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Product } from "@/lib/stores/types";
+import { addToCart } from "@/lib/cart/api";
 import OrderForm from "@/components/account/orders/OrderForm";
 
 interface ProductImage {
@@ -28,6 +29,8 @@ export default function ProductCard({ product, storeSlug, storeId }: ProductCard
   const [imageError, setImageError] = useState(false);
   const [isImageLoading, setIsImageLoading] = useState(true);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [addingToCart, setAddingToCart] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Image URL handling effect
   useEffect(() => {
@@ -54,25 +57,22 @@ export default function ProductCard({ product, storeSlug, storeId }: ProductCard
     }
 
     setImageUrl(imageUrl);
-    console.log('Setting image URL:', imageUrl);
   }, [product._id, product.images]);
 
   const handleImageLoad = useCallback(() => {
     if (isMounted.current) {
       setIsImageLoading(false);
       setImageLoaded(true);
-      console.log('Image loaded successfully:', imageUrl);
     }
-  }, [imageUrl]);
+  }, []);
 
   const handleImageError = useCallback(() => {
     if (isMounted.current) {
       setImageError(true);
       setIsImageLoading(false);
       setImageLoaded(false);
-      console.error('Image failed to load:', imageUrl);
     }
-  }, [imageUrl]);
+  }, []);
 
   // Cleanup effect
   useEffect(() => {
@@ -81,8 +81,23 @@ export default function ProductCard({ product, storeSlug, storeId }: ProductCard
     };
   }, []);
 
-  const handleOrder = () => {
-    setShowOrderForm(true);
+  const handleAddToCart = async () => {
+    try {
+      setAddingToCart(true);
+      setError(null);
+      await addToCart({
+        productId: product._id,
+        storeSlug: storeSlug,
+        quantity: quantity,
+        variantData: product.variants || []
+      });
+      router.push(`/account/orders/new?storeSlug=${storeSlug}&productId=${product._id}&quantity=${quantity}`);
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      setError(error instanceof Error ? error.message : "Failed to add to cart");
+    } finally {
+      setAddingToCart(false);
+    }
   };
 
   return (
@@ -140,8 +155,7 @@ export default function ProductCard({ product, storeSlug, storeId }: ProductCard
 
           <div className="flex justify-between items-center">
             <span className="text-lg font-bold text-gold-primary">
-              {/* ${Number(product.price).toFixed(2)} */}₦
-              {product.price.toLocaleString(undefined, {
+              ₦{product.price.toLocaleString(undefined, {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
               })}
@@ -177,20 +191,33 @@ export default function ProductCard({ product, storeSlug, storeId }: ProductCard
             </div>
           )}
 
-          {/* Order Button */}
-          <button
-            className="w-full py-2 bg-gold-primary text-white rounded-lg 
-              hover:bg-gold-secondary transition-colors
-              disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={product.stock === 0}
-            onClick={handleOrder}
-          >
-            Place Order
-          </button>
+          {/* Action Buttons */}
+          <div className="space-y-2">
+            <button
+              onClick={handleAddToCart}
+              disabled={addingToCart || product.stock === 0}
+              className="w-full bg-gold-primary text-white py-2 rounded hover:bg-gold-secondary 
+                transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            >
+              {addingToCart ? "Adding..." : "Add to Cart"}
+            </button>
+            <button
+              onClick={() => setShowOrderForm(true)}
+              className="w-full border border-gold-primary text-gold-primary py-2 rounded 
+                hover:bg-gold-primary/10 transition-colors font-medium"
+            >
+              Order Now
+            </button>
+          </div>
+
+          {error && (
+            <div className="text-red-500 text-sm text-center">
+              {error}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Order Form Modal */}
       {showOrderForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="max-h-[90vh] overflow-y-auto">

@@ -40,6 +40,10 @@ export interface Store {
   }
   createdAt: string
   updatedAt: string
+  image?: {
+    url: string
+    publicId: string
+  }
   logo?: string
   coverImage?: string
   rating?: number
@@ -312,4 +316,42 @@ export interface CreateAddressData {
 
 export interface UpdateAddressData extends Partial<CreateAddressData> {
   addressId: string;
+}
+
+export interface StoreImage {
+  url: string;
+  publicId: string;
+}
+
+export interface StoreImageUploadResponse {
+  success: boolean;
+  data: {
+    image: StoreImage;
+  };
+}
+
+export interface UpdateStoreData {
+  storeName?: string;
+  description?: string;
+  category?: string;
+  contactInfo?: {
+    email?: string;
+    phone?: string;
+    whatsapp?: string;
+  };
+  address?: {
+    street?: string;
+    city?: string;
+    state?: string;
+    country?: string;
+    postalCode?: string;
+  };
+  socialLinks?: {
+    instagram?: string;
+    facebook?: string;
+  };
+  businessInfo?: {
+    registrationNumber?: string;
+  };
+  logo?: string;
 } 

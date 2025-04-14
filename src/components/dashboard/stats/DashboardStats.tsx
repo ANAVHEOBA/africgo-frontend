@@ -137,7 +137,7 @@ export default function DashboardStats() {
                   <p className="font-medium">{product.name}</p>
                   <p className="text-sm text-gray-600">Sold: {product.totalSold}</p>
                 </div>
-                <p className="font-medium">₦{product.revenue.toLocaleString()}</p>
+                <p className="font-medium">₦{(product.revenue || 0).toLocaleString()}</p>
               </div>
             ))}
           </div>

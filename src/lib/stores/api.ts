@@ -1,6 +1,6 @@
-import { Store, StoreFilters, PaginatedStores, ProductFilters, PaginatedProducts, StoreRating, CreateStoreRatingData, PaginatedStoreOrders, StoreOrder, StoreDashboardData, PaginatedStoreCustomers, StoreAddress, CreateStoreAddressData, UpdateStoreAddressData, Address, CreateAddressData, UpdateAddressData } from './types'
+import { Store, StoreFilters, PaginatedStores, ProductFilters, PaginatedProducts, StoreRating, CreateStoreRatingData, PaginatedStoreOrders, StoreOrder, StoreDashboardData, PaginatedStoreCustomers, StoreAddress, CreateStoreAddressData, UpdateStoreAddressData, Address, CreateAddressData, UpdateAddressData, StoreImageUploadResponse, UpdateStoreData } from './types'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://logistics-backend-1-s91j.onrender.com'
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000; // 1 second
 
@@ -627,6 +627,99 @@ export async function deleteAddress(addressId: string): Promise<void> {
     }
   } catch (error) {
     console.error('Error deleting address:', error);
+    throw error;
+  }
+}
+
+export async function uploadStoreImage(imageFile: File): Promise<StoreImageUploadResponse> {
+  const token = localStorage.getItem('token');
+  
+  if (!token) {
+    throw new Error('Authentication required');
+  }
+
+  try {
+    const formData = new FormData();
+    formData.append('image', imageFile);
+
+    const response = await fetch(`${API_URL}/api/stores/upload-image`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    const data = await response.json();
+    
+    if (!response.ok || !data.success) {
+      throw new Error(data.message || 'Failed to upload image');
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error uploading store image:', error);
+    throw error;
+  }
+}
+
+export async function updateStore(storeId: string, updateData: UpdateStoreData): Promise<Store> {
+  const token = localStorage.getItem('token');
+  
+  if (!token) {
+    throw new Error('Authentication required');
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/api/stores/update`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updateData),
+    });
+
+    const data = await response.json();
+    
+    if (!response.ok || !data.success) {
+      throw new Error(data.message || 'Failed to update store');
+    }
+
+    return data.data;
+  } catch (error) {
+    console.error('Error updating store:', error);
+    throw error;
+  }
+}
+
+export async function getMyStore(): Promise<Store> {
+  const token = localStorage.getItem('token');
+  
+  if (!token) {
+    throw new Error('Authentication required');
+  }
+
+  try {
+    const response = await fetchWithRetry(
+      `${API_URL}/api/stores/my-store`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    const data = await response.json();
+    
+    if (!response.ok || !data.success) {
+      throw new Error(data.message || 'Failed to fetch store');
+    }
+
+    return data.data;
+  } catch (error) {
+    console.error('Error fetching store:', error);
     throw error;
   }
 } 
