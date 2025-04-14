@@ -24,12 +24,7 @@ export interface Cart {
 
 export interface AddToCartData {
   productId: string;
-  storeSlug: string;
   quantity: number;
-  variantData?: Array<{
-    name: string;
-    value: string;
-  }>;
 }
 
 export interface UpdateCartItemData {

@@ -48,7 +48,10 @@ export async function addToCart(cartData: AddToCartData): Promise<Cart> {
     const response = await fetch(`${API_URL}/api/cart/items`, {
       method: "POST",
       headers: getHeaders(),
-      body: JSON.stringify(cartData),
+      body: JSON.stringify({
+        productId: cartData.productId,
+        quantity: cartData.quantity
+      }),
     });
 
     const data: CartResponse = await response.json();

@@ -87,11 +87,9 @@ export default function ProductCard({ product, storeSlug, storeId }: ProductCard
       setError(null);
       await addToCart({
         productId: product._id,
-        storeSlug: storeSlug,
-        quantity: quantity,
-        variantData: product.variants || []
+        quantity: quantity
       });
-      router.push(`/account/orders/new?storeSlug=${storeSlug}&productId=${product._id}&quantity=${quantity}`);
+      router.push('/account/cart');
     } catch (error) {
       console.error('Error adding to cart:', error);
       setError(error instanceof Error ? error.message : "Failed to add to cart");

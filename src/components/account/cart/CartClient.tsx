@@ -44,11 +44,11 @@ export default function CartClient() {
     fetchCart();
   }, [router]);
 
-  const handleAddToCart = async (productId: string, storeSlug: string, quantity: number) => {
+  const handleAddToCart = async (productId: string, quantity: number) => {
     try {
       setLoading(true);
       setError(null);
-      const updatedCart = await addToCart({ productId, storeSlug, quantity });
+      const updatedCart = await addToCart({ productId, quantity });
       setCart(updatedCart);
     } catch (err) {
       if (err instanceof Error && err.message.includes("Invalid token")) {
@@ -118,11 +118,7 @@ export default function CartClient() {
 
   const handleCheckout = () => {
     if (!cart || cart.items.length === 0) return;
-    
-    // For now, we'll redirect to the first item's order form
-    // In the future, we might want to create a multi-item order form
-    const firstItem = cart.items[0];
-    router.push(`/account/orders/new?storeSlug=${firstItem.storeSlug}&productId=${firstItem.productId}&quantity=${firstItem.quantity}`);
+    router.push('/account/cart/checkout');
   };
 
   if (loading) {
