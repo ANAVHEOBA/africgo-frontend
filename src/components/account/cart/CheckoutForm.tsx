@@ -49,89 +49,62 @@ export default function CheckoutForm({ cart, zones }: CheckoutFormProps) {
       const formData = new FormData(e.currentTarget);
       console.log('Form data collected:', Object.fromEntries(formData.entries()));
 
-      // Group items by store
-      const groupedItems = cart.items.reduce<GroupedItems>((acc, item) => {
-        if (!acc[item.storeId]) {
-          acc[item.storeId] = [];
-        }
-        acc[item.storeId].push(item);
-        return acc;
-      }, {});
-
-      console.log('Grouped items by store:', JSON.stringify(groupedItems, null, 2));
-
-      // Create an order for each store
-      const orderPromises = Object.entries(groupedItems).map(([storeId, items]) => {
-        const orderData = {
-          deliveryAddress: {
-            type: 'manual',
-            manualAddress: {
-              street: formData.get('deliveryStreet') as string,
-              city: formData.get('deliveryCity') as string,
-              state: formData.get('deliveryState') as string,
-              country: formData.get('deliveryCountry') as string || 'Nigeria',
-              postalCode: formData.get('deliveryPostalCode') as string,
-              recipientName: formData.get('deliveryRecipientName') as string,
-              recipientPhone: formData.get('deliveryRecipientPhone') as string,
-              recipientEmail: formData.get('deliveryRecipientEmail') as string || undefined
-            }
-          },
-          items: items.map(item => ({
-            productId: item.productId,
-            quantity: item.quantity,
-            price: item.price,
-            variantData: item.variantData || []
-          })),
-          packageSize: formData.get('packageSize') as 'SMALL' | 'MEDIUM' | 'LARGE',
-          isFragile: formData.get('isFragile') === 'true',
-          isExpressDelivery: formData.get('isExpressDelivery') === 'true',
-          requiresSpecialHandling: false,
-          specialInstructions: formData.get('specialInstructions') as string || undefined,
-          zoneId: selectedZone._id,
-          paymentMethod: 'BANK_TRANSFER'
-        };
-
-        console.log(`Creating order for store ${storeId}:`, JSON.stringify(orderData, null, 2));
-
-        return fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://logistics-backend-1-s91j.onrender.com"}/api/cart/checkout`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          },
-          body: JSON.stringify(orderData)
-        }).then(async response => {
-          const text = await response.text();
-          console.log(`Raw response for store ${storeId}:`, text);
-          
-          try {
-            const data = JSON.parse(text);
-            console.log(`Parsed response for store ${storeId}:`, data);
-            return data;
-          } catch (err) {
-            console.error(`Failed to parse response for store ${storeId}:`, err);
-            throw new Error(`Invalid response format: ${text}`);
+      // Create a single consolidated order
+      const orderData = {
+        deliveryAddress: {
+          type: 'manual',
+          manualAddress: {
+            street: formData.get('deliveryStreet') as string,
+            city: formData.get('deliveryCity') as string,
+            state: formData.get('deliveryState') as string,
+            country: formData.get('deliveryCountry') as string || 'Nigeria',
+            postalCode: formData.get('deliveryPostalCode') as string,
+            recipientName: formData.get('deliveryRecipientName') as string,
+            recipientPhone: formData.get('deliveryRecipientPhone') as string,
+            recipientEmail: formData.get('deliveryRecipientEmail') as string || undefined
           }
-        });
+        },
+        packageSize: formData.get('packageSize') as 'SMALL' | 'MEDIUM' | 'LARGE',
+        isFragile: formData.get('isFragile') === 'true',
+        isExpressDelivery: formData.get('isExpressDelivery') === 'true',
+        requiresSpecialHandling: false,
+        specialInstructions: formData.get('specialInstructions') as string || undefined,
+        zoneId: selectedZone._id,
+        paymentMethod: 'BANK_TRANSFER',
+        consolidateDelivery: true
+      };
+
+      console.log('Sending consolidated order:', JSON.stringify(orderData, null, 2));
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://logistics-backend-1-s91j.onrender.com"}/api/cart/checkout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(orderData)
       });
 
-      // Wait for all orders to be created
-      console.log('Waiting for all orders to complete...');
-      const results = await Promise.all(orderPromises);
-      console.log('All order results:', JSON.stringify(results, null, 2));
-
-      // Check if any order failed
-      const failedOrders = results.filter(r => !r.success);
-      if (failedOrders.length > 0) {
-        console.log('Failed orders:', JSON.stringify(failedOrders, null, 2));
-        throw new Error(failedOrders[0].message || 'Failed to place some orders');
+      const text = await response.text();
+      console.log('Raw response:', text);
+      
+      let data;
+      try {
+        data = JSON.parse(text);
+        console.log('Parsed response:', data);
+      } catch (err) {
+        console.error('Failed to parse response:', err);
+        throw new Error(`Invalid response format: ${text}`);
       }
 
-      // Get the first successful order ID for redirection
-      const firstOrder = results.find(r => r.success && r.data && r.data[0]);
-      if (firstOrder && firstOrder.data[0]) {
+      if (!data.success) {
+        throw new Error(data.message || 'Failed to place order');
+      }
+
+      // Get the first order ID for redirection
+      if (data.data?.orders?.[0]?._id) {
         console.log('Redirecting to payment page...');
-        router.push(`/account/orders/${firstOrder.data[0]._id}/payment`);
+        router.push(`/account/orders/${data.data.orders[0]._id}/payment`);
       } else {
         throw new Error('No valid order data received');
       }
