@@ -354,4 +354,16 @@ export interface UpdateStoreData {
     registrationNumber?: string;
   };
   logo?: string;
+}
+
+export interface StorePaymentDetails {
+  accountName: string;
+  accountNumber: string;
+  bankName: string;
+}
+
+export interface UpdatePaymentDetailsData {
+  accountName?: string;
+  accountNumber?: string;
+  bankName?: string;
 } 

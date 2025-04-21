@@ -27,11 +27,6 @@ const navigationItems = [
     icon: CustomerIcon,
   },
   {
-    name: "Analytics",
-    href: "/dashboard/analytics",
-    icon: AnalyticsIcon,
-  },
-  {
     name: "Settings",
     href: "/dashboard/settings",
     icon: SettingsIcon,

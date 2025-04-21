@@ -1,4 +1,4 @@
-import { Store, StoreFilters, PaginatedStores, ProductFilters, PaginatedProducts, StoreRating, CreateStoreRatingData, PaginatedStoreOrders, StoreOrder, StoreDashboardData, PaginatedStoreCustomers, StoreAddress, CreateStoreAddressData, UpdateStoreAddressData, Address, CreateAddressData, UpdateAddressData, StoreImageUploadResponse, UpdateStoreData } from './types'
+import { Store, StoreFilters, PaginatedStores, ProductFilters, PaginatedProducts, StoreRating, CreateStoreRatingData, PaginatedStoreOrders, StoreOrder, StoreDashboardData, PaginatedStoreCustomers, StoreAddress, CreateStoreAddressData, UpdateStoreAddressData, Address, CreateAddressData, UpdateAddressData, StoreImageUploadResponse, UpdateStoreData, StorePaymentDetails, UpdatePaymentDetailsData } from './types'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://logistics-backend-1-s91j.onrender.com'
 const MAX_RETRIES = 3;
@@ -720,6 +720,97 @@ export async function getMyStore(): Promise<Store> {
     return data.data;
   } catch (error) {
     console.error('Error fetching store:', error);
+    throw error;
+  }
+}
+
+export async function getPaymentDetails(): Promise<StorePaymentDetails> {
+  const token = localStorage.getItem('token');
+  
+  if (!token) {
+    throw new Error('Authentication required');
+  }
+
+  try {
+    const response = await fetchWithRetry(
+      `${API_URL}/api/stores/payment-details`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    const data = await response.json();
+    
+    if (!response.ok || !data.success) {
+      throw new Error(data.message || 'Failed to fetch payment details');
+    }
+
+    return data.data.paymentDetails;
+  } catch (error) {
+    console.error('Error fetching payment details:', error);
+    throw error;
+  }
+}
+
+export async function createPaymentDetails(paymentDetails: StorePaymentDetails): Promise<StorePaymentDetails> {
+  const token = localStorage.getItem('token');
+  
+  if (!token) {
+    throw new Error('Authentication required');
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/api/stores/payment-details`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(paymentDetails)
+    });
+
+    const data = await response.json();
+    
+    if (!response.ok || !data.success) {
+      throw new Error(data.message || 'Failed to create payment details');
+    }
+
+    return data.data.paymentDetails;
+  } catch (error) {
+    console.error('Error creating payment details:', error);
+    throw error;
+  }
+}
+
+export async function updatePaymentDetails(updateData: UpdatePaymentDetailsData): Promise<StorePaymentDetails> {
+  const token = localStorage.getItem('token');
+  
+  if (!token) {
+    throw new Error('Authentication required');
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/api/stores/payment-details`, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(updateData)
+    });
+
+    const data = await response.json();
+    
+    if (!response.ok || !data.success) {
+      throw new Error(data.message || 'Failed to update payment details');
+    }
+
+    return data.data.paymentDetails;
+  } catch (error) {
+    console.error('Error updating payment details:', error);
     throw error;
   }
 } 
