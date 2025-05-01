@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import DashboardStats from "@/components/dashboard/stats/DashboardStats";
+import React from "react";
 
 interface StoreData {
   _id: string;
@@ -563,7 +564,7 @@ const MetricCard = ({
 }: {
   title: string;
   value: number | string;
-  icon: (props: React.SVGProps<SVGSVGElement>) => JSX.Element;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
 }) => (
   <div className="bg-dark-secondary rounded-lg p-6 border border-white/10">
     <div className="flex items-center space-x-4">

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Store } from '@/lib/stores/types';
 import { getMyStore } from '@/lib/stores/api';
 import StoreInformation from '@/components/dashboard/settings/StoreInformation';
+import StoreManagement from '@/components/dashboard/settings/StoreManagement';
 
 export default function StoreSettingsPage() {
   const [store, setStore] = useState<Store | null>(null);
@@ -69,6 +70,7 @@ export default function StoreSettingsPage() {
           
           <div className="space-y-8">
             <StoreInformation store={store} onUpdate={handleStoreUpdate} />
+            <StoreManagement store={store} onUpdate={handleStoreUpdate} />
             
             {/* Add more settings sections here */}
           </div>
