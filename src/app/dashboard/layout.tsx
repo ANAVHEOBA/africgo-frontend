@@ -5,6 +5,8 @@ import { useRouter, usePathname } from "next/navigation";
 import Sidebar from "@/components/dashboard/layout/Sidebar";
 import TopNav from "@/components/dashboard/layout/TopNav";
 import { motion } from "framer-motion"; // Import Framer Motion
+import { getMyStore } from "@/lib/stores/api";
+import { Store } from "@/lib/stores/types";
 
 const DashboardLayout = memo(function DashboardLayout({
   children,
@@ -15,16 +17,28 @@ const DashboardLayout = memo(function DashboardLayout({
   const pathname = usePathname();
   const [isLoading, setIsLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true); // Sidebar state
+  const [store, setStore] = useState<Store | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const checkAuthAndFetchStore = async () => {
+      const token = localStorage.getItem("token");
 
-    if (!token) {
-      router.replace("/login");
-      return;
-    }
+      if (!token) {
+        router.replace("/login");
+        return;
+      }
 
-    setIsLoading(false);
+      try {
+        const storeData = await getMyStore();
+        setStore(storeData);
+      } catch (error) {
+        console.error("Error fetching store:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkAuthAndFetchStore();
   }, [router]); // Removed pathname dependency
 
   if (isLoading) {
@@ -46,7 +60,7 @@ const DashboardLayout = memo(function DashboardLayout({
           isSidebarOpen ? "w-64" : "w-0"
         }`}
       >
-        <Sidebar currentPath={pathname} />
+        <Sidebar />
       </motion.div>
 
       {/* Main Content Area */}
@@ -55,7 +69,10 @@ const DashboardLayout = memo(function DashboardLayout({
           isSidebarOpen ? "ml-64" : "ml-0"
         }`}
       >
-        <TopNav toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
+        <TopNav 
+          toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} 
+          storeName={store?.storeName}
+        />
         <main className="p-4 sm:p-8 bg-gray-50">{children}</main>
       </div>
     </div>

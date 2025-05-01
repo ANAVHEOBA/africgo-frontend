@@ -7,8 +7,10 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export default function TopNav({
   toggleSidebar,
+  storeName,
 }: {
   toggleSidebar: () => void;
+  storeName?: string;
 }) {
   const router = useRouter();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -30,7 +32,7 @@ export default function TopNav({
 
           <Link href="/dashboard">
             <span className="text-xl font-bold text-gray-900 sm:block hidden">
-              Store Name
+              {storeName || "Dashboard"}
             </span>
           </Link>
         </div>
