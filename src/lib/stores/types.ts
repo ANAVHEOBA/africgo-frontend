@@ -223,12 +223,57 @@ export interface PaginatedStoreOrders {
 
 export interface StoreDashboardStats {
   revenue: {
-    total: number;
-    today: number;
-    yesterday: number;
-    thisWeek: number;
-    thisMonth: number;
-    dailyAverage: number;
+    total: {
+      amount: number;
+      orders: number;
+    };
+    monthly: {
+      current: {
+        amount: number;
+        orders: number;
+      };
+      previous: {
+        amount: number;
+        orders: number;
+      };
+    };
+    weekly: {
+      current: {
+        amount: number;
+        orders: number;
+      };
+      previous: {
+        amount: number;
+        orders: number;
+      };
+    };
+    daily: {
+      current: {
+        amount: number;
+        orders: number;
+      };
+      previous: {
+        amount: number;
+        orders: number;
+      };
+    };
+    breakdown: {
+      monthly: Array<{
+        month: string;
+        amount: number;
+        orders: number;
+      }>;
+      weekly: Array<{
+        week: string;
+        amount: number;
+        orders: number;
+      }>;
+      daily: Array<{
+        date: string;
+        amount: number;
+        orders: number;
+      }>;
+    };
   };
   orders: number;
 }

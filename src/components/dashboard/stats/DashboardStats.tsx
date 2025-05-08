@@ -2,22 +2,27 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { getStoreDashboard } from "@/lib/stores/api";
-import { StoreDashboardData } from "@/lib/stores/types";
+import { getStoreDashboard, getStoreRevenue } from "@/lib/stores/api";
+import { StoreDashboardData, StoreDashboardStats } from "@/lib/stores/types";
 import { getStatusStyle } from "@/lib/utils/orderUtils";
 import Link from "next/link";
 
 export default function DashboardStats() {
   const [dashboardData, setDashboardData] = useState<StoreDashboardData | null>(null);
+  const [revenueData, setRevenueData] = useState<StoreDashboardStats['revenue'] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const fetchDashboard = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const data = await getStoreDashboard();
-        setDashboardData(data);
+        const [dashboard, revenue] = await Promise.all([
+          getStoreDashboard(),
+          getStoreRevenue()
+        ]);
+        setDashboardData(dashboard);
+        setRevenueData(revenue);
       } catch (error) {
         console.error('Error fetching dashboard:', error);
         setError(error instanceof Error ? error.message : "Failed to fetch dashboard data");
@@ -26,8 +31,8 @@ export default function DashboardStats() {
       }
     };
 
-    fetchDashboard();
-    const intervalId = setInterval(fetchDashboard, 5 * 60 * 1000); // Refresh every 5 minutes
+    fetchData();
+    const intervalId = setInterval(fetchData, 5 * 60 * 1000); // Refresh every 5 minutes
     
     return () => clearInterval(intervalId);
   }, []);
@@ -48,21 +53,21 @@ export default function DashboardStats() {
     );
   }
 
-  if (!dashboardData) return null;
+  if (!dashboardData || !revenueData) return null;
 
   return (
     <div className="space-y-8">
       {/* Revenue Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="bg-white p-6 rounded-lg shadow-sm"
         >
-          <h3 className="text-lg font-semibold mb-4">Today's Revenue</h3>
-          <p className="text-3xl font-bold">₦{dashboardData.stats.revenue.today.toLocaleString()}</p>
+          <h3 className="text-lg font-semibold mb-4">Total Revenue</h3>
+          <p className="text-3xl font-bold">₦{revenueData.total.amount.toLocaleString()}</p>
           <p className="text-sm text-gray-500 mt-2">
-            Yesterday: ₦{dashboardData.stats.revenue.yesterday.toLocaleString()}
+            Total Orders: {revenueData.total.orders}
           </p>
         </motion.div>
 
@@ -72,10 +77,10 @@ export default function DashboardStats() {
           transition={{ delay: 0.1 }}
           className="bg-white p-6 rounded-lg shadow-sm"
         >
-          <h3 className="text-lg font-semibold mb-4">This Month</h3>
-          <p className="text-3xl font-bold">₦{dashboardData.stats.revenue.thisMonth.toLocaleString()}</p>
+          <h3 className="text-lg font-semibold mb-4">Today's Revenue</h3>
+          <p className="text-3xl font-bold">₦{revenueData.daily.current.amount.toLocaleString()}</p>
           <p className="text-sm text-gray-500 mt-2">
-            Daily Average: ₦{dashboardData.stats.revenue.dailyAverage.toLocaleString()}
+            Orders: {revenueData.daily.current.orders}
           </p>
         </motion.div>
 
@@ -85,10 +90,23 @@ export default function DashboardStats() {
           transition={{ delay: 0.2 }}
           className="bg-white p-6 rounded-lg shadow-sm"
         >
-          <h3 className="text-lg font-semibold mb-4">Total Revenue</h3>
-          <p className="text-3xl font-bold">₦{dashboardData.stats.revenue.total.toLocaleString()}</p>
+          <h3 className="text-lg font-semibold mb-4">This Week</h3>
+          <p className="text-3xl font-bold">₦{revenueData.weekly.current.amount.toLocaleString()}</p>
           <p className="text-sm text-gray-500 mt-2">
-            Total Orders: {dashboardData.stats.orders}
+            Orders: {revenueData.weekly.current.orders}
+          </p>
+        </motion.div>
+
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="bg-white p-6 rounded-lg shadow-sm"
+        >
+          <h3 className="text-lg font-semibold mb-4">This Month</h3>
+          <p className="text-3xl font-bold">₦{revenueData.monthly.current.amount.toLocaleString()}</p>
+          <p className="text-sm text-gray-500 mt-2">
+            Orders: {revenueData.monthly.current.orders}
           </p>
         </motion.div>
       </div>

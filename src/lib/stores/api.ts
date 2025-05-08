@@ -1,4 +1,4 @@
-import { Store, StoreFilters, PaginatedStores, ProductFilters, PaginatedProducts, StoreRating, CreateStoreRatingData, PaginatedStoreOrders, StoreOrder, StoreDashboardData, PaginatedStoreCustomers, StoreAddress, CreateStoreAddressData, UpdateStoreAddressData, Address, CreateAddressData, UpdateAddressData, StoreImageUploadResponse, UpdateStoreData, StorePaymentDetails, UpdatePaymentDetailsData } from './types'
+import { Store, StoreFilters, PaginatedStores, ProductFilters, PaginatedProducts, StoreRating, CreateStoreRatingData, PaginatedStoreOrders, StoreOrder, StoreDashboardData, StoreDashboardStats, PaginatedStoreCustomers, StoreAddress, CreateStoreAddressData, UpdateStoreAddressData, Address, CreateAddressData, UpdateAddressData, StoreImageUploadResponse, UpdateStoreData, StorePaymentDetails, UpdatePaymentDetailsData } from './types'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://logistics-backend-1-s91j.onrender.com'
 const MAX_RETRIES = 3;
@@ -811,6 +811,38 @@ export async function updatePaymentDetails(updateData: UpdatePaymentDetailsData)
     return data.data.paymentDetails;
   } catch (error) {
     console.error('Error updating payment details:', error);
+    throw error;
+  }
+}
+
+export async function getStoreRevenue(): Promise<StoreDashboardStats['revenue']> {
+  const token = localStorage.getItem('token');
+  
+  if (!token) {
+    throw new Error('Authentication required');
+  }
+
+  try {
+    const response = await fetchWithRetry(
+      `${API_URL}/api/stores/revenue`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        cache: 'no-store'
+      }
+    );
+
+    const data = await response.json();
+    
+    if (!response.ok || !data.success) {
+      throw new Error(data.message || 'Failed to fetch revenue data');
+    }
+
+    return data.data;
+  } catch (error) {
+    console.error('Error fetching revenue data:', error);
     throw error;
   }
 } 
