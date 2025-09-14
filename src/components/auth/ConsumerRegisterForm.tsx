@@ -64,7 +64,7 @@ export default function ConsumerRegisterForm() {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/consumers/verify-email`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/consumers/verify-phone`,
         {
           method: "POST",
           headers: {
@@ -81,7 +81,7 @@ export default function ConsumerRegisterForm() {
 
       if (response.ok) {
         setStatus("success");
-        setMessage("Email verified successfully! You can now login.");
+        setMessage("Phone verified successfully! You can now login.");
         setTimeout(() => {
           router.push("/login");
         }, 2000);
@@ -282,7 +282,7 @@ export default function ConsumerRegisterForm() {
               }
               transition-all duration-300`}
           >
-            {status === "loading" ? "Verifying..." : "Verify Email"}
+            {status === "loading" ? "Verifying..." : "Verify Phone"}
           </button>
 
           {message && (

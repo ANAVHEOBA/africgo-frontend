@@ -61,7 +61,7 @@ export default function RegisterForm() {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/users/verify-email`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/users/verify-phone`,
         {
           method: "POST",
           headers: {
@@ -78,7 +78,7 @@ export default function RegisterForm() {
 
       if (response.ok) {
         setStatus("success");
-        setMessage("Email verified successfully! You can now login.");
+        setMessage("Phone verified successfully! You can now login.");
         // Optionally redirect to login page after successful verification
       } else {
         setStatus("error");
@@ -234,7 +234,7 @@ export default function RegisterForm() {
           </div>
 
           {/* Submit Button */}
-          <SubmitButton status={status} text="Verify Email" />
+          <SubmitButton status={status} text="Verify Phone" />
 
           {/* Status Message */}
           <StatusMessage status={status} message={message} />
